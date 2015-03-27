@@ -1,0 +1,271 @@
+//Mark Klara
+//mak241@pitt.edu
+//CS 1622 - Project 3
+/* Parser.cup */
+
+import java_cup.runtime.*;
+import java.util.*;
+import syntaxtree.*;
+import visitor.*;
+
+/* Preliminaries to use the scanner. */
+scan with {: return lexer.next_token(); :};
+parser code {: Lexer lexer;
+public Parser(Lexer lex) { super(lex); lexer = lex; } :}; 
+
+/* Terminals */
+terminal PERIOD, COMMA, SEMICOLON, LEFTCURLY, RIGHTCURLY, LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET;
+terminal AND, LESSTHAN, EXCLAMATION, STAR, MINUS, PLUS, ASSIGNMENT;
+terminal BOOLEAN, CLASS, ELSE, EXTENDS, FALSE, IF, INT, LENGTH, MAIN, NEW, PUBLIC, RETURN, STATIC, STRING, PRINTLN, THIS, TRUE, VOID, WHILE;
+terminal String IDENTIFIER;
+terminal Integer INTEGER;
+
+/* Nonterminals */
+non terminal Program program;
+non terminal MainClass mainClass;
+non terminal ClassDecl classDeclaration;
+non terminal ClassDeclList classDeclarationChain;
+non terminal VarDecl varDeclaration;
+non terminal VarDeclList varDeclarationChain;
+non terminal MethodDecl methodDeclaration;
+non terminal MethodDeclList methodDeclarationChain;
+non terminal Type type;
+non terminal FormalList typeChain;
+non terminal Statement statement;
+non terminal StatementList statementChain;
+non terminal Exp expression;
+non terminal ExpList expressionChain;
+non terminal Identifier identifier;
+
+/* Precedence */
+precedence right ASSIGNMENT;
+precedence left AND;
+precedence left LESSTHAN;
+precedence left PLUS, MINUS;
+precedence left STAR;
+precedence right EXCLAMATION;
+
+/* Start Symbol */
+start with program;
+
+program ::= mainClass:mc classDeclarationChain:cdc
+		    {: RESULT = new Program(mc, cdc); :};
+
+mainClass ::= CLASS identifier:id1 LEFTCURLY PUBLIC STATIC VOID MAIN LEFTPAREN STRING LEFTBRACKET RIGHTBRACKET identifier:id2 RIGHTPAREN LEFTCURLY statement:stmt RIGHTCURLY RIGHTCURLY
+			  {: RESULT = new MainClass(id1, id2, stmt); :}
+			  |
+			  CLASS identifier:id1 LEFTCURLY PUBLIC STATIC VOID MAIN LEFTPAREN STRING LEFTBRACKET RIGHTBRACKET identifier:id2 RIGHTPAREN LEFTCURLY RIGHTCURLY RIGHTCURLY
+			  {: 
+				  RESULT = new MainClass(id1, id2, null);
+			  :};
+			  
+classDeclaration ::= CLASS identifier:id LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
+					 {: RESULT = new ClassDeclSimple(id, vdc, mdc); :}
+					 |
+					 CLASS identifier:id1 EXTENDS identifier:id2 LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
+					 {: RESULT = new ClassDeclExtends(id1, id2, vdc, mdc); :};
+			  
+classDeclarationChain ::= classDeclaration:cd classDeclarationChain:cdc
+						  {:
+								if(cdc == null)
+									cdc = new ClassDeclList();
+								
+								cdc.addElement(cd);
+								
+								RESULT = cdc;
+						  :}
+						  |
+						  {: RESULT = new ClassDeclList(); :}
+						  ;
+			  
+varDeclaration ::= type:t identifier:id SEMICOLON
+			       {: RESULT = new VarDecl(t, id); :};
+				
+varDeclarationChain ::= varDeclarationChain:vdc varDeclaration:vd
+						{:
+							if(vdc == null)
+								vdc = new VarDeclList();
+							
+							vdc.addElement(vd);
+							
+							RESULT = vdc;
+						:}
+						|
+						{: RESULT = new VarDeclList(); :}
+						;
+
+methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain:vdc statementChain:sc RETURN expression:e1 SEMICOLON RIGHTCURLY
+					  {: FormalList list = new FormalList();
+						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
+					  :}
+					  |
+					  PUBLIC type:t identifier:id LEFTPAREN type:t2 identifier:id2 typeChain:tc RIGHTPAREN LEFTCURLY varDeclarationChain:vdc statementChain:sc RETURN expression:e1 SEMICOLON RIGHTCURLY
+					  {: 
+						 //Wrap the additional type/id in a Formal
+						 Formal temp = new Formal(t2, id2);
+						 
+						 //Add the first formal to the list, and then add all others from the TypeChain
+						 FormalList list = new FormalList();
+						 list.addElement(temp);
+					  
+						 for(int i = 0; i < tc.size(); i++)
+						 {
+							list.addElement(tc.elementAt(i));
+						 }
+					  
+						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
+					  :};
+						
+methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
+						   {:
+							  if(mdc == null)
+								mdc = new MethodDeclList();
+								
+							  mdc.addElement(md);
+						   
+							  RESULT = mdc;
+						   :}
+						   |
+						   {: RESULT = new MethodDeclList(); :}
+						   ;
+						
+type ::= INT LEFTBRACKET RIGHTBRACKET
+		 {: RESULT = new IntArrayType(); :}
+		 |
+		 BOOLEAN
+		 {: RESULT = new BooleanType(); :}
+		 |
+		 INT
+		 {: RESULT = new IntegerType(); :}
+		 |
+		 identifier:id
+		 {: RESULT = new IdentifierType(id.toString()); :};
+
+typeChain ::= COMMA type:t identifier:id typeChain:tc
+			  {:
+				//Wrap type/id in a Formal
+				Formal temp = new Formal(t, id);
+				
+				if(tc == null)
+					tc = new FormalList();
+					
+				tc.addElement(temp);
+				
+				RESULT = tc;
+			  :}
+			  |
+			  {: RESULT = new FormalList(); :}
+			  ;
+		 
+statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
+			  {: RESULT = new Block(sc); :}
+			  |
+			  IF LEFTPAREN expression:e1 RIGHTPAREN statement:s1 ELSE statement:s2
+			  {: RESULT = new If(e1, s1, s2); :}
+			  |
+			  WHILE LEFTPAREN expression:e1 RIGHTPAREN statement:s
+			  {: RESULT = new While(e1, s); :}
+			  |
+			  PRINTLN LEFTPAREN expression:e1 RIGHTPAREN SEMICOLON
+			  {: RESULT = new Print(e1); :}
+			  |
+			  identifier:id ASSIGNMENT expression:e1 SEMICOLON
+			  {: RESULT = new Assign(id, e1); :}
+			  |
+			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT expression:e2 SEMICOLON
+			  {: RESULT = new ArrayAssign(id, e1, e2); :};
+
+statementChain ::= statement:stmt statementChain:sc
+				   {: if(sc == null)
+							sc = new StatementList();
+							
+						sc.addElement(stmt);
+						
+						RESULT = sc;
+				   :}
+				   |
+				   {: RESULT = new StatementList(); :}
+				   ;
+
+expression ::= expression:e1 AND expression:e2
+			   {: RESULT = new And(e1, e2); :}
+			   |
+			   expression:e1 LESSTHAN expression:e2
+			   {: RESULT = new LessThan(e1, e2); :}
+			   |
+			   expression:e1 PLUS expression:e2
+			   {: RESULT = new Plus(e1, e2); :}
+			   |
+			   expression:e1 MINUS expression:e2
+			   {: RESULT = new Minus(e1, e2); :}
+			   |
+			   expression:e1 STAR expression:e2
+			   {: RESULT = new Times(e1, e2); :}
+			   |
+			   expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET
+			   {: RESULT = new ArrayLookup(e1, e2); :}
+			   |
+			   expression:e1 PERIOD LENGTH
+			   {: RESULT = new ArrayLength(e1); :}
+			   |
+			   expression:e1 PERIOD identifier:id LEFTPAREN RIGHTPAREN
+			   {:
+					ExpList ec = new ExpList();
+					RESULT = new Call(e1, id, ec); 
+				:}
+			   |
+			   expression:e1 PERIOD identifier:id LEFTPAREN expression:e2 expressionChain:ec RIGHTPAREN
+			   {: 
+					//Create a new list and add "e2" as the first argument.  Then add any from the expressionChain
+					ExpList list = new ExpList();
+					list.addElement(e2);
+					
+					for(int i = 0; i < ec.size(); i++)
+					{
+						list.addElement(ec.elementAt(i));
+					}
+					
+					RESULT = new Call(e1, id, list); 
+			   :}
+			   |
+			   INTEGER:i
+			   {: RESULT = new IntegerLiteral(i.intValue()); :}
+			   |
+			   TRUE
+			   {: RESULT = new True(); :}
+			   |
+			   FALSE
+			   {: RESULT = new False(); :}
+			   |
+			   identifier:id
+			   {: RESULT = new IdentifierExp(id.toString()); :}
+			   |
+			   THIS
+			   {: RESULT = new This(); :}
+			   |
+			   NEW INT LEFTBRACKET expression:e1 RIGHTBRACKET
+			   {: RESULT = new NewArray(e1); :}
+			   |
+			   NEW identifier:id LEFTPAREN RIGHTPAREN
+			   {: RESULT = new NewObject(id); :}
+			   |
+			   EXCLAMATION expression:e1
+			   {: RESULT = new Not(e1); :}
+			   |
+			   LEFTPAREN expression:e1 RIGHTPAREN
+			   {: RESULT = e1; :};
+
+expressionChain	::= COMMA expression:e1 expressionChain:ec
+					{: if(ec == null)
+							ec = new ExpList();
+							
+						ec.addElement(e1);
+						
+						RESULT = ec;
+					:}
+					|
+					{: RESULT = new ExpList(); :}
+					;
+				
+identifier ::= IDENTIFIER:id
+			   {: RESULT = new Identifier(id); :};
