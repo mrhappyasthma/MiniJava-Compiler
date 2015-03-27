@@ -21,9 +21,9 @@ java -cp ./tools/java-cup-11a.jar:. MiniJavaCompiler MyMiniJavaFile.java
 
 ### About the implementation:
 
-The Lexer implementation is written completely using JFlex (see Lexer.flex).  You can read more about JFlex here: http://jflex.de/manual.html
+The Lexer implementation is written completely using JFlex (see [Lexer.flex](https://github.com/mrhappyasthma/MiniJava-Compiler/blob/master/Lexer.flex)).  You can read more about JFlex here: http://jflex.de/manual.html
 
-The Parser implementation is written completely using JCup (see Parser.cup).  You can read more about JavaCup here: http://www2.cs.tum.edu/projects/cup/manual.html
+The Parser implementation is written completely using JCup (see [Parser.cup](https://github.com/mrhappyasthma/MiniJava-Compiler/blob/master/Parser.cup)).  You can read more about JavaCup here: http://www2.cs.tum.edu/projects/cup/manual.html
 
 The Grammar for MiniJava as defined by The MiniJava Project can be seen below (http://www.cambridge.org/us/features/052182060X/grammar.html):
 
