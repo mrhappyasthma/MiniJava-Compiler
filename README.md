@@ -9,7 +9,7 @@ The easiest way to build the project is with the provided Makefile on a linux en
 
 ### To Run:
 
-The easiest way to run is to place your code in the "samples" subfolder and then execute the folling command (where "MyMiniJavaFile.java" is the file you wish to compile and resides in the "samples" folder):
+The easiest way to run is to place your code in the "samples" subfolder and then execute the following command (where "MyMiniJavaFile.java" is the file you wish to compile and resides in the "samples" folder):
 ```
 make run file=MyMiniJavaFile.java
 ```
