@@ -1,5 +1,5 @@
 # MiniJava-Compiler
-This is a simple compiler written in Java to compile the subset of Java called "MiniJava".  Taken from the website for The MiniJava Project (http://www.cambridge.org/us/features/052182060X/):
+This is a simple compiler written in Java to compile the subset of Java called "MiniJava" into MIPS assembly language.  Taken from the website for The MiniJava Project (http://www.cambridge.org/us/features/052182060X/):
 
 >MiniJava is a subset of Java. The meaning of a MiniJava program is given by its meaning as a Java program. Overloading is not allowed in MiniJava. The MiniJava statement System.out.println( ... ); can only print integers. The MiniJava expression e.length only applies to expressions of type int [].
 
@@ -29,4 +29,4 @@ The Grammar for MiniJava as defined by The MiniJava Project can be seen below (h
 
 ![MiniJava Grammar](http://i.imgur.com/XazQEp9.jpg)
 
-The front end of the compiler produces an AST as a first type of intermediate representation.  This is traversed to create Three-Address Code.  Lastly, the backend of the compiler generates code based on this Three-Address Code.
+The front end of the compiler produces an AST as a first type of intermediate representation.  This is traversed to create Three-Address Code.  Lastly, the backend of the compiler generates MIPS Assembly code based on this Three-Address Code.
