@@ -30,9 +30,12 @@ public class MiniJavaCompiler
 
 			if(program != null)
 			{
-				//Visit the tree starting at root (program)
-				Visitor v = new PrettyPrintVisitor();
-				v.visit(program);
+				if(parser.errorDetected == false)
+				{
+					//Visit the tree starting at root (program)
+					Visitor v = new PrettyPrintVisitor();
+					v.visit(program);
+				}
 			}
 			else
 			{

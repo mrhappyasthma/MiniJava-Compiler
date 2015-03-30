@@ -11,7 +11,12 @@ import visitor.*;
 /* Preliminaries to use the scanner. */
 scan with {: return lexer.next_token(); :};
 parser code {: Lexer lexer;
-public Parser(Lexer lex) { super(lex); lexer = lex; } :}; 
+boolean errorDetected;
+public Parser(Lexer lex) { super(lex); lexer = lex; errorDetected = false; }
+public void syntax_error(Symbol cur_token) { 
+				errorDetected = true;
+				System.err.println("Parse error at line " + cur_token.left + ", column " + cur_token.right); }
+ :}; 
 
 /* Terminals */
 terminal PERIOD, COMMA, SEMICOLON, LEFTCURLY, RIGHTCURLY, LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET;
@@ -173,7 +178,11 @@ statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
 			  {: RESULT = new Assign(id, e1); :}
 			  |
 			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT expression:e2 SEMICOLON
-			  {: RESULT = new ArrayAssign(id, e1, e2); :};
+			  {: RESULT = new ArrayAssign(id, e1, e2); :}
+			  |
+			  error SEMICOLON:s
+			  {: :}
+			  ;
 
 statementChain ::= statement:stmt statementChain:sc
 				   {: if(sc == null)
