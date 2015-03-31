@@ -36,6 +36,7 @@ non terminal MethodDecl methodDeclaration;
 non terminal MethodDeclList methodDeclarationChain;
 non terminal Type type;
 non terminal FormalList typeChain;
+non terminal FormalList typeChainParen;
 non terminal Statement statement;
 non terminal StatementList statementChain;
 non terminal Exp expression;
@@ -68,7 +69,10 @@ classDeclaration ::= CLASS identifier:id LEFTCURLY varDeclarationChain:vdc metho
 					 {: RESULT = new ClassDeclSimple(id, vdc, mdc); :}
 					 |
 					 CLASS identifier:id1 EXTENDS identifier:id2 LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
-					 {: RESULT = new ClassDeclExtends(id1, id2, vdc, mdc); :};
+					 {: RESULT = new ClassDeclExtends(id1, id2, vdc, mdc); :}
+					 | 
+					 error RIGHTCURLY
+					 ;
 			  
 classDeclarationChain ::= classDeclaration:cd classDeclarationChain:cdc
 						  {:
@@ -84,7 +88,12 @@ classDeclarationChain ::= classDeclaration:cd classDeclarationChain:cdc
 						  ;
 			  
 varDeclaration ::= type:t identifier:id SEMICOLON
-			       {: RESULT = new VarDecl(t, id); :};
+			       {: RESULT = new VarDecl(t, id); :}
+				| 
+				type error SEMICOLON
+				|
+				error identifier SEMICOLON
+				;
 				
 varDeclarationChain ::= varDeclarationChain:vdc varDeclaration:vd
 						{:
@@ -104,7 +113,7 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
 					  :}
 					  |
-					  PUBLIC type:t identifier:id LEFTPAREN type:t2 identifier:id2 typeChain:tc RIGHTPAREN LEFTCURLY varDeclarationChain:vdc statementChain:sc RETURN expression:e1 SEMICOLON RIGHTCURLY
+					  PUBLIC type:t identifier:id LEFTPAREN type:t2 identifier:id2 typeChainParen:tc LEFTCURLY varDeclarationChain:vdc statementChain:sc RETURN expression:e1 SEMICOLON RIGHTCURLY
 					  {: 
 						 //Wrap the additional type/id in a Formal
 						 Formal temp = new Formal(t2, id2);
@@ -119,7 +128,10 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 						 }
 					  
 						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
-					  :};
+					  :}
+					  | 
+					  error RIGHTCURLY
+					  ;
 						
 methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
 						   {:
@@ -146,6 +158,12 @@ type ::= INT LEFTBRACKET RIGHTBRACKET
 		 identifier:id
 		 {: RESULT = new IdentifierType(id.toString()); :};
 
+typeChainParen ::= typeChain:tc RIGHTPAREN
+		{:RESULT = tc; :} 
+		|
+		error RIGHTPAREN
+		;
+
 typeChain ::= COMMA type:t identifier:id typeChain:tc
 			  {:
 				//Wrap type/id in a Formal
@@ -160,6 +178,7 @@ typeChain ::= COMMA type:t identifier:id typeChain:tc
 			  :}
 			  |
 			  {: RESULT = new FormalList(); :}
+			  |
 			  ;
 		 
 statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
@@ -180,8 +199,7 @@ statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
 			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT expression:e2 SEMICOLON
 			  {: RESULT = new ArrayAssign(id, e1, e2); :}
 			  |
-			  error SEMICOLON:s
-			  {: :}
+			  error SEMICOLON
 			  ;
 
 statementChain ::= statement:stmt statementChain:sc
