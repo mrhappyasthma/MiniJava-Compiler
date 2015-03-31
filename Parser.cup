@@ -131,6 +131,9 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 					  :}
 					  | 
 					  error RIGHTCURLY
+					  //PUBLIC error RIGHTCURLY
+					  //|
+					  //error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
 					  ;
 						
 methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
@@ -178,7 +181,6 @@ typeChain ::= COMMA type:t identifier:id typeChain:tc
 			  :}
 			  |
 			  {: RESULT = new FormalList(); :}
-			  |
 			  ;
 		 
 statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
