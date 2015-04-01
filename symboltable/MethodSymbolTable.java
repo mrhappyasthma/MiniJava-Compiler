@@ -42,4 +42,14 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 	{
 		return name;
 	}
+	
+	public Variable localVarLookup(String name)
+	{
+		Variable var = vars.get(name);
+		
+		if(var != null)
+			return var;
+		else
+			return args.get(name);
+	}
 }
