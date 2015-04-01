@@ -104,7 +104,8 @@ public class BuildSymbolTableVisitor implements Visitor
 		n.i2.accept(this);
 		n.s.accept(this);
 		
-		currentScope = symbolTable;
+		currentScope = currentScope.exitScope();
+		currentScope = currentScope.exitScope();
 	}
   
 	// Identifier i;
@@ -134,7 +135,7 @@ public class BuildSymbolTableVisitor implements Visitor
 			n.ml.elementAt(i).accept(this);
 		}
 	
-		currentScope = symbolTable;
+		currentScope = currentScope.exitScope();
 	}
  
 	// Identifier i;
@@ -166,7 +167,7 @@ public class BuildSymbolTableVisitor implements Visitor
 			n.ml.elementAt(i).accept(this);
 		}
 		
-		currentScope = symbolTable;
+		currentScope = currentScope.exitScope();
 	}
 
 	// Type t;
@@ -236,7 +237,7 @@ public class BuildSymbolTableVisitor implements Visitor
     
 		n.e.accept(this);
 		
-		currentScope = cst;
+		currentScope = currentScope.exitScope();
 	}
 
 	// Type t;
