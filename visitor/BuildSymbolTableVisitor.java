@@ -67,13 +67,6 @@ public class BuildSymbolTableVisitor implements Visitor
 		errorDetected = true;
 	}
 	
-	//Helper function to report Undefined Errors
-	private void undefError(String name, int line, int character)
-	{
-		System.err.println("Use of undefined identifier " + name + " at line " + line + ", character " + character);
-		errorDetected = true;
-	}
-	
 	// MainClass m;
 	// ClassDeclList cl;
 	public void visit(Program n) 
@@ -397,8 +390,7 @@ public class BuildSymbolTableVisitor implements Visitor
 
 	// String s;
 	public void visit(IdentifierExp n) 
-	{
-	}
+	{}
 
 	public void visit(This n) 
 	{}

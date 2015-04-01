@@ -48,6 +48,7 @@ public class MiniJavaCompiler
 							System.out.println("Oh no... the scope is null!");
 						else
 							s.print(0);
+						
 					}
 				}
 			}
