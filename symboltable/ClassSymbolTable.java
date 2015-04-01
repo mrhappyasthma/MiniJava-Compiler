@@ -32,33 +32,54 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 		methods.put(name, new MethodSymbolTable(this, name, paramNames, paramTypes, returnType));
 	}
 	
+	//Helper function
+	private boolean lookupParentsMethod(String name, String[] paramNames, String[] paramTypes, String returnType)
+	{
+		if(parentClass != null)
+		{
+			Scope temp = parent.enterScope(parentClass);
+						
+			if(temp != null)
+			{
+				return temp.lookupMethod(name, paramNames, paramTypes, returnType);
+			}
+		}
+		
+		return false;
+	}
+	
 	public boolean lookupMethod(String name, String[] paramNames, String[] paramTypes, String returnType)
 	{
 		MethodSymbolTable method = methods.get(name);
 		
-		if(method.getReturnType() != returnType)
+		if(method == null)
 		{
-			return false;
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+		}
+		
+		if(!method.getReturnType().equals(returnType))
+		{
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
 		}
 	
 		Object[] parameters = method.getParameters();
 	
 		if(parameters.length != paramNames.length)
 		{
-			return false;
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
 		}
 	
 		for(int i = 0; i < parameters.length; i++)
 		{
 			Variable param = (Variable)parameters[i];
-			if(param.getName() != paramNames[i])
+			if(!param.getName().equals(paramNames[i]))
 			{
-				return false;
+				return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
 			}
 			
-			if(param.getType() != paramTypes[i])
+			if(!param.getType().equals(paramTypes[i]))
 			{
-				return false;
+				return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
 			}
 		}
 		
