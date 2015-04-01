@@ -33,30 +33,33 @@ public class MiniJavaCompiler
 			{
 				if(parser.errorDetected == false)
 				{
-					//Visit the tree starting at root (program)
-					BuildSymbolTableVisitor v = new BuildSymbolTableVisitor();
-					v.visit(program);
-
-					boolean undefinedVarDetected = false;
-					UndefinedVariableVisitor undVisitor;
-					if(v.getFirstScope()!=null){
-						undVisitor = new UndefinedVariableVisitor(v.getFirstScope());
-						undVisitor.visit(program);
-						undefinedVarDetected = undVisitor.errorDetected;
-					}
-					if(v.errorDetected == false && undefinedVarDetected == false )
+					//Visit the tree starting at root (program) to build the symbol table
+					BuildSymbolTableVisitor bstVisitor = new BuildSymbolTableVisitor();
+					bstVisitor.visit(program);
+					
+					//Get a copy of the symboltable
+					Scope symbolTable = bstVisitor.getFirstScope();
+					
+					if(symbolTable == null) //Check for error making symbol table
 					{
-						//Do Type Checking Here Eventually...
-						//...For now we just print out the symbol table
-					
-						Scope s = v.getFirstScope();
-					
-						if(s == null)
-							System.out.println("Oh no... the scope is null!");
-						else
-							s.print(0);
-						
+						System.err.println("Oh no... the symbol table is null!");
+						return;
 					}
+
+					//Visit the tree starting at the root to check for undefined variables
+					UndefinedVariableVisitor undefinedVisitor = new UndefinedVariableVisitor(symbolTable); 
+					undefinedVisitor.visit(program);
+
+					//Visit the tree starting at the root to check for type errors
+					//...TODO
+					
+					if(bstVisitor.errorDetected | undefinedVisitor.errorDetected) //If any errors occured, do not generate IR
+					{
+						return;
+					}
+					
+					//Generate IR
+					//...TODO
 				}
 			}
 		}
