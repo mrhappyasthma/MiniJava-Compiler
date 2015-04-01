@@ -1,12 +1,12 @@
 class Factorial{
 	public static void main(String[] args){
-		System.out.println.(new Fac().ComputeFac());
+		System.out.println(new Fac().ComputeFac());
 	}
 }
 
-class Fac{
+Fac{
     public int ComputeFac (int num){
-	int  ; 
+	int num_aux ; 
 	if (num < 1)
 	    num_aux = 1 ;
 	else 
@@ -14,4 +14,3 @@ class Fac{
 	return num_aux ;
     }
 }
-// errors: line 3 - statement; line 9 - variable declaration; 13 - actual parameter

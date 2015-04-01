@@ -70,8 +70,8 @@ classDeclaration ::= CLASS identifier:id LEFTCURLY varDeclarationChain:vdc metho
 					 |
 					 CLASS identifier:id1 EXTENDS identifier:id2 LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
 					 {: RESULT = new ClassDeclExtends(id1, id2, vdc, mdc); :}
-					 | 
-					 error RIGHTCURLY
+					 //| 
+					// error methodDeclarationChain RIGHTCURLY
 					 ;
 			  
 classDeclarationChain ::= classDeclaration:cd classDeclarationChain:cdc
@@ -129,11 +129,11 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 					  
 						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
 					  :}
-					  | 
-					  error RIGHTCURLY
-					  //PUBLIC error RIGHTCURLY
-					  //|
-					  //error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
+					      | 
+					      error RIGHTCURLY
+					   // PUBLIC error RIGHTCURLY
+					   // |
+					   // error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
 					  ;
 						
 methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
