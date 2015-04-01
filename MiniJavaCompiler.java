@@ -37,17 +37,19 @@ public class MiniJavaCompiler
 					BuildSymbolTableVisitor v = new BuildSymbolTableVisitor();
 					v.visit(program);
 					
-					Scope s = v.getFirstScope();
+					if(v.errorDetected == false)
+					{
+						//Do Type Checking Here Eventually...
+						//...For now we just print out the symbol table
 					
-					if(s == null)
-						System.out.println("Oh no... the scope is null!");
-					else
-						s.print(0);
+						Scope s = v.getFirstScope();
+					
+						if(s == null)
+							System.out.println("Oh no... the scope is null!");
+						else
+							s.print(0);
+					}
 				}
-			}
-			else
-			{
-				System.err.println("Error: parse_tree.value == null");
 			}
 		}
 		catch (java.io.IOException e)

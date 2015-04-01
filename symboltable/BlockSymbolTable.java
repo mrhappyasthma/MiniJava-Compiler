@@ -42,21 +42,18 @@ public class BlockSymbolTable implements Scope
 	}
 	
 	public void addVariable(String name, String type)
-	{
-		int line = 0;  //placeholdr
-		int col = 0;   //placeholder
-		
-		if(vars.get(name) != null)
-		{
-			System.err.println("Multiply defined identifier " + name + " at line " + line + ", character " + col);
-		}
-		
+	{		
 		vars.put(name, new Variable(name, type));
+	}
+	
+	public Variable localVarLookup(String name)
+	{
+		return vars.get(name);
 	}
 	
 	public Variable lookupVariable(String name)
 	{
-		Variable var = vars.get(name);
+		Variable var = localVarLookup(name);
 		
 		if(var != null)
 		{

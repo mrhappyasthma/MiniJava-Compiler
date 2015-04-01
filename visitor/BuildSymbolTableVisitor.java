@@ -10,15 +10,17 @@ import symboltable.*;
 
 public class BuildSymbolTableVisitor implements Visitor
 {
-	SymbolTable symbolTable;
-	Scope currentScope;
-	int blockNumber;
+	private SymbolTable symbolTable;
+	private Scope currentScope;
+	private int blockNumber;
+	public boolean errorDetected;
 	
 	public BuildSymbolTableVisitor()
 	{
 		symbolTable = new SymbolTable();
 		currentScope = symbolTable;
 		blockNumber = 0;
+		errorDetected = false;
 	}
 	
 	public Scope getFirstScope()
@@ -58,6 +60,20 @@ public class BuildSymbolTableVisitor implements Visitor
 		return type;
 	}
 	
+	//Helper function to report Redefinition Errors
+	private void redefError(String name, int line, int character)
+	{
+		System.err.println("Multiply defined identifier " + name + " at line " + line + ", character " + character);
+		errorDetected = true;
+	}
+	
+	//Helper function to report Undefined Errors
+	private void undefError(String name, int line, int character)
+	{
+		System.err.println("Use of undefined identifier " + name + " at line " + line + ", character " + character);
+		errorDetected = true;
+	}
+	
 	// MainClass m;
 	// ClassDeclList cl;
 	public void visit(Program n) 
@@ -84,7 +100,7 @@ public class BuildSymbolTableVisitor implements Visitor
 		
 		cst.addMethod("System.out.println", paramNames, paramTypes, "void");
 		
-		paramTypes[0] = "String";
+		paramTypes[0] = "String[]";
 		paramNames[0] = n.i2.toString();
 		
 		cst.addMethod("main", paramNames, paramTypes, "void");
@@ -167,6 +183,16 @@ public class BuildSymbolTableVisitor implements Visitor
 		String type = getTypeStr(n.t);
 		
 		BlockSymbolTable bst = (BlockSymbolTable) currentScope;
+		
+		//Check for redefinition errorDetected
+		int line = 0;  //placeholdr
+		int character = 0;   //placeholder
+		
+		if(bst.localVarLookup(n.i.toString()) != null)
+		{
+			redefError(n.i.toString(), line, character);
+		}
+		
 		bst.addVariable(n.i.toString(), type);
 		
 		n.t.accept(this);
@@ -291,7 +317,7 @@ public class BuildSymbolTableVisitor implements Visitor
 	// Identifier i;
 	// Exp e1,e2;
 	public void visit(ArrayAssign n) 
-	{
+	{	
 		n.i.accept(this);
 		n.e1.accept(this);
 		n.e2.accept(this);
@@ -371,7 +397,8 @@ public class BuildSymbolTableVisitor implements Visitor
 
 	// String s;
 	public void visit(IdentifierExp n) 
-	{}
+	{
+	}
 
 	public void visit(This n) 
 	{}
