@@ -6,8 +6,8 @@ class Factorial{
 
 class Fac {
     public int ComputeFac(int num){
-	int num_aux;
-	int num_aux ;
+	int y;
+	int y;
 	if (num < 1)
 	    num_aux = 1 ;
 	else 
@@ -15,3 +15,9 @@ class Fac {
 	return num_aux ;
     }
 }
+
+//Errors:
+//		 Redefinition - Line 10
+//		 Undefined - Line 12
+//					 Line 14
+//					 Line 15
