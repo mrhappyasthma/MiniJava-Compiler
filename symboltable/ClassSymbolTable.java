@@ -72,6 +72,11 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	{
 		System.out.print("class " + name);
 		
+		if(parentClass != null)
+		{
+			System.out.print(" extends " + parentClass);
+		}
+		
 		Set<String> keys = vars.keySet();
 		
 		for(String key : keys)
