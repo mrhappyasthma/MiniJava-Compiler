@@ -7,11 +7,15 @@ import java_cup.runtime.*;
 import java.util.*;
 import syntaxtree.*;
 import visitor.*;
+import helper.*;
 
 /* Preliminaries to use the scanner. */
-scan with {: return lexer.next_token(); :};
+scan with {: 
+				return lexer.next_token(); 
+		  :};
 parser code {: Lexer lexer;
 boolean errorDetected;
+public java_cup.runtime.Symbol currentSym;
 public Parser(Lexer lex) { super(lex); lexer = lex; errorDetected = false; }
 public void syntax_error(Symbol cur_token) { 
 				errorDetected = true;
@@ -22,8 +26,8 @@ public void syntax_error(Symbol cur_token) {
 terminal PERIOD, COMMA, SEMICOLON, LEFTCURLY, RIGHTCURLY, LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET;
 terminal AND, LESSTHAN, EXCLAMATION, STAR, MINUS, PLUS, ASSIGNMENT;
 terminal BOOLEAN, CLASS, ELSE, EXTENDS, FALSE, IF, INT, LENGTH, MAIN, NEW, PUBLIC, RETURN, STATIC, STRING, PRINTLN, THIS, TRUE, VOID, WHILE;
-terminal String IDENTIFIER;
-terminal Integer INTEGER;
+terminal Token IDENTIFIER;
+terminal Token INTEGER;
 
 /* Nonterminals */
 non terminal Program program;
@@ -70,8 +74,8 @@ classDeclaration ::= CLASS identifier:id LEFTCURLY varDeclarationChain:vdc metho
 					 |
 					 CLASS identifier:id1 EXTENDS identifier:id2 LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
 					 {: RESULT = new ClassDeclExtends(id1, id2, vdc, mdc); :}
-					 //| 
-					// error methodDeclarationChain RIGHTCURLY
+					 | 
+					 error RIGHTCURLY
 					 ;
 			  
 classDeclarationChain ::= classDeclaration:cd classDeclarationChain:cdc
@@ -129,11 +133,11 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 					  
 						 RESULT = new MethodDecl(t, id, list, vdc, sc, e1);
 					  :}
-					      | 
-					      error RIGHTCURLY
-					   // PUBLIC error RIGHTCURLY
-					   // |
-					   // error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
+					  | 
+					  error RIGHTCURLY
+					  //PUBLIC error RIGHTCURLY
+					  //|
+					  //error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
 					  ;
 						
 methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
@@ -258,7 +262,10 @@ expression ::= expression:e1 AND expression:e2
 			   :}
 			   |
 			   INTEGER:i
-			   {: RESULT = new IntegerLiteral(i.intValue()); :}
+			   {: 
+					Integer x = (Integer) i.getValue();
+					RESULT = new IntegerLiteral(x.intValue()); 
+			   :}
 			   |
 			   TRUE
 			   {: RESULT = new True(); :}
@@ -296,5 +303,8 @@ expressionChain	::= COMMA expression:e1 expressionChain:ec
 					{: RESULT = new ExpList(); :}
 					;
 				
-identifier ::= IDENTIFIER:id
-			   {: RESULT = new Identifier(id); :};
+identifier ::=  IDENTIFIER:id
+			    {: 
+					String s = (String)id.getValue();
+					RESULT = new Identifier(s); 
+				:};
