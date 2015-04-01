@@ -5,15 +5,21 @@ import symboltable.*;
 
 public class UndefinedVariableVisitor implements Visitor {
 	
-	//SymbolTable symbolTable;
-	Scope currentScope;
-	//boolean errorDetected;
-	public UndefinedVariableVisitor(){
+	private Scope currentScope;
+	public boolean errorDetected;
+	private int blockNumber;
+	public UndefinedVariableVisitor(Scope s){
 		BuildSymbolTableVisitor symTableVisitor = new BuildSymbolTableVisitor();
-		currentScope = symTableVisitor.getFirstScope(); 
+		currentScope = s; 
+		errorDetected = false;
+		blockNumber=0;
 	}
-
-
+	//create numbers (as strings) for the blocks
+	public String nextBlockNumber()
+	{
+		blockNumber++;
+		return ("" + blockNumber);
+	}
 
 
   // MainClass m;
@@ -28,27 +34,32 @@ public class UndefinedVariableVisitor implements Visitor {
   // Identifier i1,i2;
   // Statement s;
   public void visit(MainClass n) {
-    currentScope =currentScope.enterScope("main");    
-    n.i1.accept(this);
-    n.i2.accept(this);
-    n.s.accept(this);
-    currentScope = currentScope.exitScope();
+    		currentScope =currentScope.enterScope("main");    
+		n.i1.accept(this);
+    		n.i2.accept(this);
+    		n.s.accept(this);
+		//why this one needs to be here    	
+		if(currentScope!=null){
+			currentScope = currentScope.exitScope();
+   	 	}
   }
   
   // Identifier i;
   // VarDeclList vl;
   // MethodDeclList ml;
   public void visit(ClassDeclSimple n) {
-    currentScope =currentScope.enterScope(n.i.toString());
-    n.i.accept(this);
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.ml.size(); i++ ) {
-        n.ml.elementAt(i).accept(this);
-    }
-   currentScope = currentScope.exitScope();
-	
+	//and why this one here?
+    	if(currentScope!=null){
+		currentScope =currentScope.enterScope(n.i.toString());
+   		 n.i.accept(this);
+    		for ( int i = 0; i < n.vl.size(); i++ ) {
+       			 n.vl.elementAt(i).accept(this);
+    		}
+    		for ( int i = 0; i < n.ml.size(); i++ ) {
+        		n.ml.elementAt(i).accept(this);
+    		}
+   		currentScope = currentScope.exitScope();
+  	}
   }
  
   // Identifier i;
@@ -56,16 +67,18 @@ public class UndefinedVariableVisitor implements Visitor {
   // VarDeclList vl;
   // MethodDeclList ml;
   public void visit(ClassDeclExtends n) {
-    currentScope =currentScope.enterScope(n.i.toString());
-    n.i.accept(this);
-    n.j.accept(this);
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
+    if(currentScope!=null){
+    	currentScope =currentScope.enterScope(n.i.toString());
+    	n.i.accept(this);
+    	n.j.accept(this);
+    	for ( int i = 0; i < n.vl.size(); i++ ) {
+       		 n.vl.elementAt(i).accept(this);
+    	}
+    	for ( int i = 0; i < n.ml.size(); i++ ) {
+        	n.ml.elementAt(i).accept(this);
+    	}
+    	currentScope =currentScope.exitScope();
     }
-    for ( int i = 0; i < n.ml.size(); i++ ) {
-        n.ml.elementAt(i).accept(this);
-    }
-    currentScope =currentScope.exitScope();
   }
 
   // Type t;
@@ -82,20 +95,22 @@ public class UndefinedVariableVisitor implements Visitor {
   // StatementList sl;
   // Exp e;
   public void visit(MethodDecl n) {
-    currentScope =currentScope.enterScope(n.i.toString());
-    n.t.accept(this);
-    n.i.accept(this);
-    for ( int i = 0; i < n.fl.size(); i++ ) {
-        n.fl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.sl.size(); i++ ) {
-        n.sl.elementAt(i).accept(this);
-    }
-    n.e.accept(this);
-    currentScope = currentScope.exitScope();
+    if(currentScope!=null){
+   	 currentScope =currentScope.enterScope(n.i.toString());
+    	n.t.accept(this);
+    	n.i.accept(this);
+    	for ( int i = 0; i < n.fl.size(); i++ ) {
+       		 n.fl.elementAt(i).accept(this);
+    	}
+    	for ( int i = 0; i < n.vl.size(); i++ ) {
+        	n.vl.elementAt(i).accept(this);
+    	}
+    	for ( int i = 0; i < n.sl.size(); i++ ) {
+        	n.sl.elementAt(i).accept(this);
+    	}
+    	n.e.accept(this);
+    	currentScope = currentScope.exitScope();
+     }
   }
 
   // Type t;
@@ -120,11 +135,14 @@ public class UndefinedVariableVisitor implements Visitor {
 
   // StatementList sl;
   public void visit(Block n) {
-   // currentScope = currentScope.enterScope();
-    for ( int i = 0; i < n.sl.size(); i++ ) {
-        n.sl.elementAt(i).accept(this);
-    }
-   // currentScope = currentScope.exit();
+    String blockNum = nextBlockNumber();
+    	if(currentScope!=null){
+    		currentScope = currentScope.enterScope(blockNum);
+    		for ( int i = 0; i < n.sl.size(); i++ ) {
+        		n.sl.elementAt(i).accept(this);
+    		}
+   	 	currentScope = currentScope.exitScope();
+    	}
   }
 
   // Exp e;
@@ -150,22 +168,30 @@ public class UndefinedVariableVisitor implements Visitor {
   // Identifier i;
   // Exp e;
   public void visit(Assign n) {
-    if(currentScope.lookupVariable(n.i.s) == null){
-        System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
-    }
-    n.i.accept(this);
-    n.e.accept(this);
+    	n.i.accept(this);
+    	n.e.accept(this);
+	if(currentScope!=null){
+        	if(currentScope.lookupVariable(n.i.s) == null){
+                	errorDetected=true;
+                	System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
+        } 
+
+   }
   }
 
   // Identifier i;
   // Exp e1,e2;
   public void visit(ArrayAssign n) {
-    if(currentScope.lookupVariable(n.i.s) == null){
-	System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
-    }
     n.i.accept(this);
     n.e1.accept(this);
     n.e2.accept(this);
+    if(currentScope!=null){
+        if(currentScope.lookupVariable(n.i.s) == null){
+                System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
+                errorDetected = true;
+        }
+    }
+
   }
 
   // Exp e1,e2;
@@ -232,8 +258,11 @@ public class UndefinedVariableVisitor implements Visitor {
 
   // String s;
   public void visit(IdentifierExp n) {
-    if(currentScope.lookupVariable(n.s) == null){
-        System.out.println("Use of undefined identifier "+n.s+" at line 0 character0");
+    if(currentScope!=null){
+	if(currentScope.lookupVariable(n.s) == null){
+		errorDetected = true;
+		 System.out.println("Use of undefined identifier "+n.s+" at line 0 character0");
+        }
     }
 
   }
@@ -248,9 +277,13 @@ public class UndefinedVariableVisitor implements Visitor {
 
   // Identifier i;
   public void visit(NewObject n) {
-  if(currentScope.lookupVariable(n.i.s) == null){
-        System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
-   }
+	if(currentScope!=null){	 
+ 		if(currentScope.lookupVariable(n.i.s) == null){
+        			errorDetected = true;
+				System.out.println("Use of undefined identifier "+n.i.s+" at line 0 character0");
+   			
+		}
+	}
 }
 
   // Exp e;
