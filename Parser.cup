@@ -23,9 +23,9 @@ public void syntax_error(Symbol cur_token) {
  :}; 
 
 /* Terminals */
-terminal PERIOD, COMMA, SEMICOLON, LEFTCURLY, RIGHTCURLY, LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET;
-terminal AND, LESSTHAN, EXCLAMATION, STAR, MINUS, PLUS, ASSIGNMENT;
-terminal BOOLEAN, CLASS, ELSE, EXTENDS, FALSE, IF, INT, LENGTH, MAIN, NEW, PUBLIC, RETURN, STATIC, STRING, PRINTLN, THIS, TRUE, VOID, WHILE;
+terminal Token PERIOD, COMMA, SEMICOLON, LEFTCURLY, RIGHTCURLY, LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET;
+terminal Token AND, LESSTHAN, EXCLAMATION, STAR, MINUS, PLUS, ASSIGNMENT;
+terminal Token BOOLEAN, CLASS, ELSE, EXTENDS, FALSE, IF, INT, LENGTH, MAIN, NEW, PUBLIC, RETURN, STATIC, STRING, PRINTLN, THIS, TRUE, VOID, WHILE;
 terminal Token IDENTIFIER;
 terminal Token INTEGER;
 
@@ -264,7 +264,7 @@ expression ::= expression:e1 AND expression:e2
 			   INTEGER:i
 			   {: 
 					Integer x = (Integer) i.getValue();
-					RESULT = new IntegerLiteral(x.intValue()); 
+					RESULT = new IntegerLiteral(x.intValue(), i.getLine(), i.getCol()); 
 			   :}
 			   |
 			   TRUE
@@ -306,5 +306,5 @@ expressionChain	::= COMMA expression:e1 expressionChain:ec
 identifier ::=  IDENTIFIER:id
 			    {: 
 					String s = (String)id.getValue();
-					RESULT = new Identifier(s); 
+					RESULT = new Identifier(s, id.getLine(), id.getCol()); 
 				:};

@@ -178,13 +178,9 @@ public class BuildSymbolTableVisitor implements Visitor
 		
 		BlockSymbolTable bst = (BlockSymbolTable) currentScope;
 		
-		//Check for redefinition errorDetected
-		int line = 0;  //placeholdr
-		int character = 0;   //placeholder
-		
 		if(bst.localVarLookup(n.i.toString()) != null)
 		{
-			redefError(n.i.toString(), line, character);
+			redefError(n.i.toString(), n.i.lineNum, n.i.charNum);
 		}
 		
 		bst.addVariable(n.i.toString(), type);

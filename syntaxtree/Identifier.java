@@ -1,12 +1,21 @@
+//Modified by:  Mark Klara
+//mak241@pitt.edu
+//Project 3
+//Identifier.java
+
 package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public class Identifier {
   public String s;
+  public int lineNum;
+  public int charNum;
 
-  public Identifier(String as) { 
+  public Identifier(String as, int lineNum, int charNum) { 
     s=as;
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) {
