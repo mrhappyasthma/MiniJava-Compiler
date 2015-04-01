@@ -112,4 +112,26 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	{
 		return parentClass;
 	}
+	
+	public Variable localVarLookup(String name)
+	{
+		Variable var = vars.get(name);
+		
+		if(var != null)
+		{
+			return var;
+		}
+
+		if(parentClass != null)
+		{
+			Scope temp = parent.enterScope(parentClass);
+				
+			if(temp != null)
+			{
+				return temp.lookupVariable(name);
+			}
+		}
+		
+		return null;
+	}
 }
