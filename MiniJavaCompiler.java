@@ -36,8 +36,15 @@ public class MiniJavaCompiler
 					//Visit the tree starting at root (program)
 					BuildSymbolTableVisitor v = new BuildSymbolTableVisitor();
 					v.visit(program);
-					
-					if(v.errorDetected == false)
+
+					boolean undefinedVarDetected = false;
+					UndefinedVariableVisitor undVisitor;
+					if(v.getFirstScope()!=null){
+						undVisitor = new UndefinedVariableVisitor(v.getFirstScope());
+						undVisitor.visit(program);
+						undefinedVarDetected = undVisitor.errorDetected;
+					}
+					if(v.errorDetected == false && undefinedVarDetected == false )
 					{
 						//Do Type Checking Here Eventually...
 						//...For now we just print out the symbol table
