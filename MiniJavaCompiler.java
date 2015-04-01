@@ -7,6 +7,7 @@ import java_cup.runtime.*;
 import java.io.*;
 import syntaxtree.*;
 import visitor.*;
+import symboltable.*;
 
 public class MiniJavaCompiler
 {
@@ -33,8 +34,15 @@ public class MiniJavaCompiler
 				if(parser.errorDetected == false)
 				{
 					//Visit the tree starting at root (program)
-					Visitor v = new PrettyPrintVisitor();
+					BuildSymbolTableVisitor v = new BuildSymbolTableVisitor();
 					v.visit(program);
+					
+					Scope s = v.getFirstScope();
+					
+					if(s == null)
+						System.out.println("Oh no... the scope is null!");
+					else
+						s.print(0);
 				}
 			}
 			else
