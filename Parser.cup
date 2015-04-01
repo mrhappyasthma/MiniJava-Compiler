@@ -274,7 +274,7 @@ expression ::= expression:e1 AND expression:e2
 			   {: RESULT = new False(); :}
 			   |
 			   identifier:id
-			   {: RESULT = new IdentifierExp(id.toString()); :}
+			   {: RESULT = new IdentifierExp(id.toString(), id.lineNum, id.charNum); :}
 			   |
 			   THIS
 			   {: RESULT = new This(); :}
