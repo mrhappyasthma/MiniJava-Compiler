@@ -1,11 +1,21 @@
+//Modified by:  Mark Klara
+//mak241@pitt.edu
+//Project 3
+//IdentifierExp.java
+
 package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public class IdentifierExp extends Exp {
   public String s;
-  public IdentifierExp(String as) { 
+  public int lineNum;
+  public int charNum;
+
+  public IdentifierExp(String as, int lineNum, int charNum) { 
     s=as;
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) {
