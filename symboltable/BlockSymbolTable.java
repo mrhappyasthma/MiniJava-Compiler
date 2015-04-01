@@ -10,15 +10,10 @@ import java.util.Set;
 
 public class BlockSymbolTable implements Scope
 {
-	private Scope parent;
-	private Hashtable<String, Variable> vars;
-	private Hashtable<String, BlockSymbolTable> blocks;
+	protected Scope parent;
+	protected Hashtable<String, Variable> vars;
+	protected Hashtable<String, BlockSymbolTable> blocks;
 
-	public BlockSymbolTable()
-	{
-		this(null);
-	}
-	
 	public BlockSymbolTable(Scope parent)
 	{
 		this.parent = parent;

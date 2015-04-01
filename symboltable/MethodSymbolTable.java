@@ -11,18 +11,13 @@ import java.util.Set;
 public class MethodSymbolTable extends BlockSymbolTable implements Scope
 {
 	private String name;
-	private Scope parent;
-	private Hashtable<String, Variable> vars;
-	private Hashtable<String, BlockSymbolTable> blocks;
 	private Hashtable<String, Variable> args;
 	private String returnType;
 	
 	public MethodSymbolTable(Scope parent, String name, String[] paramNames, String[] paramTypes, String returnType)
 	{
+		super(parent);
 		this.name = name;
-		this.parent = parent;
-		vars = new Hashtable<String, Variable>();
-		blocks = new Hashtable<String, BlockSymbolTable>();
 		args = new Hashtable<String, Variable>();
 		
 		for(int i = 0; i < paramNames.length; i++)

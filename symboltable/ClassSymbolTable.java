@@ -12,16 +12,13 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 {
 	private String name;
 	private String parentClass;
-	private Scope parent;
-	private Hashtable<String, Variable> vars;
 	private Hashtable<String, MethodSymbolTable> methods;
 	
 	public ClassSymbolTable(Scope parent, String name, String parentClass)
 	{
+		super(parent);
 		this.parentClass = parentClass;
-		this.parent = parent;
 		this.name = name;
-		vars = new Hashtable<String, Variable>();
 		methods = new Hashtable<String, MethodSymbolTable>();
 	}
 	
