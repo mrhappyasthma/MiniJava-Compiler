@@ -35,6 +35,7 @@ public class BuildSymbolTableVisitor implements Visitor
 		return ("" + blockNumber);
 	}
 	
+	//Helper function to turn Type into String containing the type:  i.e. "int", "boolean", etc.
 	public String getTypeStr(Type t)
 	{
 		String type;
