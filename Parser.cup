@@ -67,7 +67,10 @@ mainClass ::= CLASS identifier:id1 LEFTCURLY PUBLIC STATIC VOID MAIN LEFTPAREN S
 			  CLASS identifier:id1 LEFTCURLY PUBLIC STATIC VOID MAIN LEFTPAREN STRING LEFTBRACKET RIGHTBRACKET identifier:id2 RIGHTPAREN LEFTCURLY RIGHTCURLY RIGHTCURLY
 			  {: 
 				  RESULT = new MainClass(id1, id2, null);
-			  :};
+			  :}
+			  |
+			  error RIGHTCURLY RIGHTCURLY
+			  ;
 			  
 classDeclaration ::= CLASS identifier:id LEFTCURLY varDeclarationChain:vdc methodDeclarationChain:mdc RIGHTCURLY
 					 {: RESULT = new ClassDeclSimple(id, vdc, mdc); :}
@@ -135,9 +138,6 @@ methodDeclaration ::= PUBLIC type:t identifier:id LEFTPAREN RIGHTPAREN LEFTCURLY
 					  :}
 					  | 
 					  error RIGHTCURLY
-					  //PUBLIC error RIGHTCURLY
-					  //|
-					  //error type identifier LEFTPAREN RIGHTPAREN LEFTCURLY varDeclarationChain statementChain RETURN expression SEMICOLON RIGHTCURLY
 					  ;
 						
 methodDeclarationChain ::= methodDeclaration:md methodDeclarationChain:mdc
