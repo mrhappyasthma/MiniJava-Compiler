@@ -59,7 +59,8 @@ public class MiniJavaCompiler
 					}
 					
 					//Generate IR
-					//...TODO
+					IRVisitor intermediateVisitor = new IRVisitor(symbolTable);
+					intermediateVisitor.visit(program);
 				}
 			}
 		}
