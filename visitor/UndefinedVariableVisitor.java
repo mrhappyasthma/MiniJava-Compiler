@@ -8,7 +8,6 @@ public class UndefinedVariableVisitor implements Visitor {
 	public boolean errorDetected;
 	private int blockNumber;
 	public UndefinedVariableVisitor(Scope s){
-		BuildSymbolTableVisitor symTableVisitor = new BuildSymbolTableVisitor();
 		currentScope = s; 
 		errorDetected = false;
 		blockNumber=0;
@@ -58,22 +57,22 @@ public class UndefinedVariableVisitor implements Visitor {
   // Identifier i1,i2;
   // Statement s;
   public void visit(MainClass n) {
-		currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
+	currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
     	currentScope = currentScope.enterScope("main");    
 		
-		n.i1.accept(this);
+	n.i1.accept(this);
     	n.i2.accept(this);
     	n.s.accept(this);
 
-		currentScope = currentScope.exitScope(); //Exit "main" method
-		currentScope = currentScope.exitScope(); //Exit class
+	currentScope = currentScope.exitScope(); //Exit "main" method
+	currentScope = currentScope.exitScope(); //Exit class
    }
   
   // Identifier i;
   // VarDeclList vl;
   // MethodDeclList ml;
   public void visit(ClassDeclSimple n) {
-		currentScope = currentScope.enterScope(n.i.toString()); //Enter class
+	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
 		
    		 n.i.accept(this);
     	for ( int i = 0; i < n.vl.size(); i++ ) {
@@ -83,7 +82,7 @@ public class UndefinedVariableVisitor implements Visitor {
         	n.ml.elementAt(i).accept(this);
     	}
 			
-   		currentScope = currentScope.exitScope(); //Exit class
+   	currentScope = currentScope.exitScope(); //Exit class
   	}
  
   // Identifier i;
@@ -119,7 +118,7 @@ public class UndefinedVariableVisitor implements Visitor {
   // StatementList sl;
   // Exp e;
   public void visit(MethodDecl n) {
-		currentScope = currentScope.enterScope(n.i.toString()); //Enter method
+	currentScope = currentScope.enterScope(n.i.toString()); //Enter method
 		
     	n.t.accept(this);
     	n.i.accept(this);
