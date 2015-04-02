@@ -3,11 +3,11 @@ package visitor;
 import syntaxtree.*;
 import symboltable.*;
 
-public class UndefinedVariableVisitor implements Visitor {
+public class TypeCheckingVisitor implements Visitor {
 	private Scope currentScope;
 	public boolean errorDetected;
 	private int blockNumber;
-	public UndefinedVariableVisitor(Scope s){
+	public TypeCheckingVisitor(Scope s){
 		currentScope = s; 
 		errorDetected = false;
 		blockNumber=0;
@@ -39,12 +39,6 @@ public class UndefinedVariableVisitor implements Visitor {
 		return type;
 	}
 	
-	//Helper function to report Redefinition Errors
-	private void undefError(String name, int line, int character){
-		System.err.println("Use of undefined identifier " + name + " at line " + line + ", character " + character);
-		errorDetected = true;
-	}
-
   // MainClass m;
   // ClassDeclList cl;
   public void visit(Program n) {
@@ -58,7 +52,7 @@ public class UndefinedVariableVisitor implements Visitor {
   // Statement s;
   public void visit(MainClass n) {
 	currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
-    	currentScope = currentScope.enterScope("main");    
+    currentScope = currentScope.enterScope("main");    
 		
 	n.i1.accept(this);
     	n.i2.accept(this);
@@ -118,7 +112,7 @@ public class UndefinedVariableVisitor implements Visitor {
   // StatementList sl;
   // Exp e;
   public void visit(MethodDecl n) {
-	currentScope = currentScope.enterScope(n.i.toString()); //Enter method
+		currentScope = currentScope.enterScope(n.i.toString()); //Enter method
 		
     	n.t.accept(this);
     	n.i.accept(this);
@@ -158,10 +152,14 @@ public class UndefinedVariableVisitor implements Visitor {
 
   // StatementList sl;
   public void visit(Block n) {
+		String blockNum = nextBlockNumber();
+		currentScope = currentScope.enterScope(blockNum); //Enter block
 		
 		for ( int i = 0; i < n.sl.size(); i++ ) {
 			n.sl.elementAt(i).accept(this);
 		}
+		
+		currentScope = currentScope.exitScope(); //Exit block
     }
 
   // Exp e;

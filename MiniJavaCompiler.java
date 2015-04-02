@@ -51,9 +51,11 @@ public class MiniJavaCompiler
 					undefinedVisitor.visit(program);
 
 					//Visit the tree starting at the root to check for type errors
-					//...TODO
+					TypeCheckingVisitor typeCheckVisitor = new TypeCheckingVisitor(symbolTable);
+					typeCheckVisitor.visit(program);
 					
-					if(bstVisitor.errorDetected | undefinedVisitor.errorDetected) //If any errors occured, do not generate IR
+					//If any errors occured, do not generate IR
+					if(bstVisitor.errorDetected | undefinedVisitor.errorDetected | typeCheckVisitor.errorDetected) 
 					{
 						return;
 					}
