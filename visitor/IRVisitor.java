@@ -5,6 +5,8 @@
 
 package visitor;
 
+import java.util.List;
+import java.util.ArrayList;
 import syntaxtree.*;
 import symboltable.*;
 import IR.*;
@@ -13,9 +15,11 @@ public class IRVisitor implements Visitor
 {
 	private Scope currentScope;
 	private int blockNumber;
+	private List<Quadruple> IRlist; 
 	
 	public IRVisitor(Scope symbolTable)
 	{
+		IRlist = new ArrayList<Quadruple>();
 		currentScope = symbolTable;
 		blockNumber = 0;
 	}
