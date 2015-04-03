@@ -8,7 +8,7 @@ package IR;
 public class UnaryAssignmentIR extends Quadruple
 {
 	//x := op y
-	public UnaryAssignmentIR(String operator, String y, String x)
+	public UnaryAssignmentIR(Object operator, Object y, Object x)
 	{
 		op = operator;   //op
 		arg1 = y;        //y

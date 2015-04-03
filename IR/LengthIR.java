@@ -8,7 +8,7 @@ package IR;
 public class LengthIR extends Quadruple
 {
 	//x := length y
-	public LengthIR(String y, String x)
+	public LengthIR(Object y, Object x)
 	{
 		op = "length";        //length
 		arg1 = y;             //y

@@ -8,7 +8,7 @@ package IR;
 public class CopyIR extends Quadruple
 {
 	//x := y
-	public CopyIR(String argument1, String result)
+	public CopyIR(Object argument1, Object result)
 	{
 		op = null;
 		arg1 = argument1;     //y

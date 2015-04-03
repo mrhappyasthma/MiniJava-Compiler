@@ -8,7 +8,7 @@ package IR;
 public class AssignmentIR extends Quadruple
 {
 	//x := y op z
-	public AssignmentIR(String operator, String y, String z, String x)
+	public AssignmentIR(Object operator, Object y, Object z, Object x)
 	{
 		op = operator;    //op
 		arg1 = y;         //y

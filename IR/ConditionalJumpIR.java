@@ -8,7 +8,7 @@ package IR;
 public class ConditionalJumpIR extends Quadruple
 {
 	//iffalse x goto LABEL
-	public ConditionalJumpIR(String x, String label)
+	public ConditionalJumpIR(Object x, Object label)
 	{
 		op = "iffalse";       //iffalse
 		arg1 = x;             //x

@@ -8,7 +8,7 @@ package IR;
 public class ParameterIR extends Quadruple
 {
 	//param x
-	public ParameterIR(String x)
+	public ParameterIR(Object x)
 	{
 		op = "param";   //param
 		arg1 = x;       //x

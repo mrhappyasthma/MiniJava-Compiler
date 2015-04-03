@@ -8,7 +8,7 @@ package IR;
 public class NewArrayIR extends Quadruple
 {
 	//x := new TYPE, SIZE
-	public NewArrayIR(String TYPE, String SIZE, String x)
+	public NewArrayIR(Object TYPE, Object SIZE, Object x)
 	{
 		op = "new";        //new
 		arg1 = TYPE;       //TYPE

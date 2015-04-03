@@ -8,7 +8,7 @@ package IR;
 public class NewIR extends Quadruple
 {
 	//x := new TYPE
-	public NewIR(String TYPE, String x)
+	public NewIR(Object TYPE, Object x)
 	{
 		op = "new";        //new
 		arg1 = TYPE;       //TYPE
