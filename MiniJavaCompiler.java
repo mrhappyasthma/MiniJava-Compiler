@@ -8,6 +8,8 @@ import java.io.*;
 import syntaxtree.*;
 import visitor.*;
 import symboltable.*;
+import IR.*;
+import java.util.List;
 
 public class MiniJavaCompiler
 {
@@ -63,6 +65,12 @@ public class MiniJavaCompiler
 					//Generate IR
 					IRVisitor intermediateVisitor = new IRVisitor(symbolTable);
 					intermediateVisitor.visit(program);
+					
+					List<Quadruple> IRList = intermediateVisitor.getIR();
+					
+					//Print IR
+					for(Quadruple q : IRList)
+						System.out.println(q.toString());
 				}
 			}
 		}

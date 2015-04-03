@@ -10,18 +10,24 @@ import java.util.ArrayList;
 import syntaxtree.*;
 import symboltable.*;
 import IR.*;
+import helper.*;
 
 public class IRVisitor implements Visitor
 {
 	private Scope currentScope;
 	private int blockNumber;
-	private List<Quadruple> IRlist; 
+	private List<Quadruple> IRList; 
 	
 	public IRVisitor(Scope symbolTable)
 	{
-		IRlist = new ArrayList<Quadruple>();
+		IRList = new ArrayList<Quadruple>();
 		currentScope = symbolTable;
 		blockNumber = 0;
+	}
+	
+	public List<Quadruple> getIR()
+	{
+		return IRList;
 	}
 
 	//Helper function to create unique numbers (as strings) for the blocks
@@ -134,7 +140,9 @@ public class IRVisitor implements Visitor
 		{
         	n.sl.elementAt(i).accept(this);
     	}
+		
     	n.e.accept(this);
+		IRList.add(new ReturnIR(n.e.generateTAC()));
 		
     	currentScope = currentScope.exitScope(); //Exit method
 	}
@@ -195,6 +203,8 @@ public class IRVisitor implements Visitor
 	public void visit(Print n) 
 	{
 		n.e.accept(this);
+		IRList.add(new ParameterIR(n.e.generateTAC()));
+		IRList.add(new CallIR("System.out.println", "1", null));
 	}
   
 	// Identifier i;
@@ -203,6 +213,7 @@ public class IRVisitor implements Visitor
 	{
 		n.i.accept(this);
 		n.e.accept(this);
+		IRList.add(new CopyIR(n.e.generateTAC(), n.i.toString()));
 	}
 
 	// Identifier i;
@@ -212,13 +223,15 @@ public class IRVisitor implements Visitor
 		n.i.accept(this);
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new IndexedAssignmentIR2(n.e2.generateTAC(), n.e1.generateTAC(), n.i.toString()));
 	}
 
 	// Exp e1,e2;
 	public void visit(And n) 
 	{
-		n.e1.accept(this);
+		n.e1.accept(this);	
 		n.e2.accept(this);
+		IRList.add(new AssignmentIR("&&", n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e1,e2;
@@ -226,6 +239,7 @@ public class IRVisitor implements Visitor
 	{
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new AssignmentIR("<", n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e1,e2;
@@ -233,6 +247,7 @@ public class IRVisitor implements Visitor
 	{
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new AssignmentIR("+", n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e1,e2;
@@ -240,6 +255,7 @@ public class IRVisitor implements Visitor
 	{
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new AssignmentIR("-", n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e1,e2;
@@ -247,6 +263,7 @@ public class IRVisitor implements Visitor
 	{
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new AssignmentIR("*", n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e1,e2;
@@ -254,12 +271,14 @@ public class IRVisitor implements Visitor
 	{
 		n.e1.accept(this);
 		n.e2.accept(this);
+		IRList.add(new IndexedAssignmentIR1(n.e1.generateTAC(), n.e2.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e;
 	public void visit(ArrayLength n) 
 	{
 		n.e.accept(this);
+		IRList.add(new LengthIR(n.e.generateTAC(), n.generateTAC()));
 	}
 
 	// Exp e;
@@ -269,11 +288,21 @@ public class IRVisitor implements Visitor
 	{
 		n.e.accept(this);
 		n.i.accept(this);
-    
+	
 		for ( int i = 0; i < n.el.size(); i++ )
 		{
 			n.el.elementAt(i).accept(this);
 		}
+		
+		//Add the caller as the "this" parameter
+		IRList.add(new ParameterIR(n.e.generateTAC()));
+		
+		for(int i = 0; i < n.el.size(); i++)
+		{
+			IRList.add(new ParameterIR(n.el.elementAt(i).generateTAC()));
+		}
+		
+		IRList.add(new CallIR(n.i.toString(), Integer.toString(n.el.size() + 1), n.generateTAC()));
 	}
 
 	// int i;
@@ -297,16 +326,20 @@ public class IRVisitor implements Visitor
 	public void visit(NewArray n) 
 	{
 		n.e.accept(this);
+		IRList.add(new NewArrayIR("int", n.e.generateTAC(), n.generateTAC()));
 	}
 
 	// Identifier i;
 	public void visit(NewObject n) 
-	{}
+	{
+		IRList.add(new NewIR(n.i.toString(), n.generateTAC()));
+	}
 
 	// Exp e;
 	public void visit(Not n) 
 	{
 		n.e.accept(this);
+		IRList.add(new UnaryAssignmentIR("!", n.e.generateTAC(), n.generateTAC()));
 	}
 
 	// String s;
