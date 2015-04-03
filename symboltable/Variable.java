@@ -21,6 +21,11 @@ public class Variable
 		return name;
 	}
 	
+	public String toString()
+	{
+		return getName();
+	}
+	
 	public String getType()
 	{
 		return type;
