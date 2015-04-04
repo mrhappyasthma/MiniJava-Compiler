@@ -38,6 +38,15 @@ public class TypeCheckingVisitor implements Visitor {
 		
 		return type;
 	}
+	//function to check if the name is of a method or not
+	public boolean isMethod (String name){
+		
+		return false;
+	}
+	public boolean isClass (String name){
+
+		return false;
+	}
 	
   // MainClass m;
   // ClassDeclList cl;
@@ -186,9 +195,30 @@ public class TypeCheckingVisitor implements Visitor {
   // Exp e;
   public void visit(Assign n) {
     	n.i.accept(this);
-    	n.e.accept(this);
+	//assign from a class or method name
+		//System.out.println("Invalid l-value, "+n.i.s+" is a Method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+
+                //System.out.println("Invalid l-value, "+n.i.s+" is a Class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	
+	
 	//assign to a class or method name, or the keyword this
-  }
+	boolean aux; 
+	aux = isMethod(n.i.s);
+	if(n.i.s.equals("this")){
+		System.out.println("Invalid l-value, "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	}
+	if(aux){
+		System.out.println("Invalid l-value, "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	}
+	else{
+		aux = isClass(n.i.s);
+		if(aux){
+			System.out.println("Invalid l-value, "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		}
+		
+	}
+
+ }
 
   // Identifier i;
   // Exp e1,e2;
@@ -198,8 +228,6 @@ public class TypeCheckingVisitor implements Visitor {
     n.e2.accept(this);
 
   }
-
-  // Exp e1,e2;
   public void visit(And n) {
     n.e1.accept(this);
     n.e2.accept(this);
@@ -275,7 +303,7 @@ public class TypeCheckingVisitor implements Visitor {
 
   // Identifier i;
   public void visit(NewObject n) {
-}
+  }
 
   // Exp e;
   public void visit(Not n) {
@@ -285,4 +313,7 @@ public class TypeCheckingVisitor implements Visitor {
   // String s;
   public void visit(Identifier n) {
   }
+
+
+
 }
