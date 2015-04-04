@@ -3,7 +3,7 @@ package visitor;
 import syntaxtree.*;
 import symboltable.*;
 
-public class TypeCheckingExpVisitor implements TypeVisitor {
+public class TypeCheckingExpVisitor extends TypeDepthFirstVisitor {
 
 
 	Scope currentScope;
@@ -11,162 +11,12 @@ public class TypeCheckingExpVisitor implements TypeVisitor {
 		currentScope = s;
 	}
 
-  public Type visit(Program n) {
-    n.m.accept(this);
-    for ( int i = 0; i < n.cl.size(); i++ ) {
-        n.cl.elementAt(i).accept(this);
-    }
-    return null;
-  }
-  
-  // Identifier i1,i2;
-  // Statement s;
-  public Type visit(MainClass n) {
-    n.i1.accept(this);
-    n.i2.accept(this);
-    n.s.accept(this);
-    return null;
-  }
-  
-  // Identifier i;
-  // VarDeclList vl;
-  // MethodDeclList ml;
-  public Type visit(ClassDeclSimple n) {
-    n.i.accept(this);
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.ml.size(); i++ ) {
-        n.ml.elementAt(i).accept(this);
-    }
-    return null;
-  }
- 
-  // Identifier i;
-  // Identifier j;
-  // VarDeclList vl;
-  // MethodDeclList ml;
-  public Type visit(ClassDeclExtends n) {
-    n.i.accept(this);
-    n.j.accept(this);
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.ml.size(); i++ ) {
-        n.ml.elementAt(i).accept(this);
-    }
-    return null;
-  }
-
-  // Type t;
-  // Identifier i;
-  public Type visit(VarDecl n) {
-    n.t.accept(this);
-    n.i.accept(this);
-    return null;
-  }
-
-  // Type t;
-  // Identifier i;
-  // FormalList fl;
-  // VarDeclList vl;
-  // StatementList sl;
-  // Exp e;
-  public Type visit(MethodDecl n) {
-    n.t.accept(this);
-    n.i.accept(this);
-    for ( int i = 0; i < n.fl.size(); i++ ) {
-        n.fl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.vl.size(); i++ ) {
-        n.vl.elementAt(i).accept(this);
-    }
-    for ( int i = 0; i < n.sl.size(); i++ ) {
-        n.sl.elementAt(i).accept(this);
-    }
-    n.e.accept(this);
-    return null;
-  }
-
-  // Type t;
-  // Identifier i;
-  public Type visit(Formal n) {
-    n.t.accept(this);
-    n.i.accept(this);
-    return null;
-  }
-
-  public Type visit(IntArrayType n) {
-    return null;
-  }
-
-  public Type visit(BooleanType n) {
-    return null;
-  }
-
-  public Type visit(IntegerType n) {
-    return null;
-  }
-
-  // String s;
-  public Type visit(IdentifierType n) {
-    return null;
-  }
-
-  // StatementList sl;
-  public Type visit(Block n) {
-    for ( int i = 0; i < n.sl.size(); i++ ) {
-        n.sl.elementAt(i).accept(this);
-    }
-    return null;
-  }
-
-  // Exp e;
-  // Statement s1,s2;
-  public Type visit(If n) {
-    n.e.accept(this);
-    n.s1.accept(this);
-    n.s2.accept(this);
-    return null;
-  }
-
-  // Exp e;
-  // Statement s;
-  public Type visit(While n) {
-    n.e.accept(this);
-    n.s.accept(this);
-    return null;
-  }
-
-  // Exp e;
-  public Type visit(Print n) {
-    n.e.accept(this);
-    return null;
-  }
-  
-  // Identifier i;
-  // Exp e;
-  public Type visit(Assign n) {
-    n.i.accept(this);
-    n.e.accept(this);
-    return null;
-  }
-
-  // Identifier i;
-  // Exp e1,e2;
-  public Type visit(ArrayAssign n) {
-    n.i.accept(this);
-    n.e1.accept(this);
-    n.e2.accept(this);
-    return null;
-  }
-	
-
   // Exp e1,e2;
   public Type visit(And n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-    return null;
+	if(!(n.e1.accept(this) instanceof BooleanType) || !(n.e2.accept(this) instanceof BooleanType )){
+		System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
+	}
+    	return new BooleanType();
   }
 
   // Exp e1,e2;
@@ -177,7 +27,7 @@ public class TypeCheckingExpVisitor implements TypeVisitor {
         if(! (n.e2.accept(this) instanceof IntegerType)){
                 System.out.println("Non-integer operand for operator <, at line 0, character 0");   
         }
-	return new IntegerType();
+	return new BooleanType();
 
    
   }
@@ -222,13 +72,15 @@ public class TypeCheckingExpVisitor implements TypeVisitor {
   public Type visit(ArrayLookup n) {
     n.e1.accept(this);
     n.e2.accept(this);
-    return null;
+    return new IntegerType();
   }
 
   // Exp e;
   public Type visit(ArrayLength n) {
-    n.e.accept(this);
-	return null;  
+	if(!(n.e.accept(this) instanceof IntArrayType)){
+		System.out.println("Length property only applies to arrays line 0, character 0");
+	}
+	return new IntegerType();  
   }
 
   // Exp e;
@@ -245,41 +97,43 @@ public class TypeCheckingExpVisitor implements TypeVisitor {
 
   // int i;
   public Type visit(IntegerLiteral n) {
-	return null;
+	return new IntegerType();
   }
 
   public Type visit(True n) {
-	return null;
+	return new BooleanType();
   }
 
   public Type visit(False n) {
-	return null;
+	return new BooleanType();
   }
 
   // String s;
   public Type visit(IdentifierExp n) {
+	//return var type
 	return null;
   }
 
   public Type visit(This n) {
+	//return current class type
 	return null;
   }
 
   // Exp e;
   public Type visit(NewArray n) {
     n.e.accept(this);
-	return null;
+	return new IntArrayType();
   }
 
   // Identifier i;
   public Type visit(NewObject n) {
-	return null;
+	return new IdentifierType(n.i.s);
 }
 
   // Exp e;
   public Type visit(Not n) {
-    n.e.accept(this);
-	return null;
+	n.e.accept(this);
+	return new BooleanType();
   }
 
   // String s;

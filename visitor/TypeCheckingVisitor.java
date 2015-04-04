@@ -3,7 +3,7 @@ package visitor;
 import syntaxtree.*;
 import symboltable.*;
 
-public class TypeCheckingVisitor implements Visitor {
+public class TypeCheckingVisitor extends DepthFirstVisitor {
 	private Scope currentScope;
 	public boolean errorDetected;
 	private int blockNumber;
@@ -174,16 +174,20 @@ public class TypeCheckingVisitor implements Visitor {
   // Exp e;
   // Statement s1,s2;
   public void visit(If n) {
-    n.e.accept(this);
-    n.s1.accept(this);
-    n.s2.accept(this);
+    	if(!(n.e.accept(new TypeCheckingExpVisitor(currentScope)) instanceof BooleanType) ){
+		System.out.println("Non-boolean expression used as the confition of if statement at line 0, character 0");
+	}
+    	n.s1.accept(this);
+    	n.s2.accept(this);
   }
 
   // Exp e;
   // Statement s;
   public void visit(While n) {
-    n.e.accept(this);
-    n.s.accept(this);
+	if(!(n.e.accept(new TypeCheckingExpVisitor(currentScope)) instanceof BooleanType) ){
+                System.out.println("Non-boolean expression used as the confition of while statement at line 0, character 0");
+        }
+    	n.s.accept(this);
   }
 
   // Exp e;
@@ -228,92 +232,4 @@ public class TypeCheckingVisitor implements Visitor {
     n.e2.accept(this);
 
   }
-  public void visit(And n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e1,e2;
-  public void visit(LessThan n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e1,e2;
-  public void visit(Plus n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e1,e2;
-  public void visit(Minus n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e1,e2;
-  public void visit(Times n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e1,e2;
-  public void visit(ArrayLookup n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-  }
-
-  // Exp e;
-  public void visit(ArrayLength n) {
-    n.e.accept(this);
-  }
-
-  // Exp e;
-  // Identifier i;
-  // ExpList el;
-  public void visit(Call n) {
-    n.e.accept(this);
-    n.i.accept(this);
-    for ( int i = 0; i < n.el.size(); i++ ) {
-        n.el.elementAt(i).accept(this);
-    }
-  }
-
-  // int i;
-  public void visit(IntegerLiteral n) {
-  }
-
-  public void visit(True n) {
-  }
-
-  public void visit(False n) {
-  }
-
-  // String s;
-  public void visit(IdentifierExp n) {
-  }
-
-  public void visit(This n) {
-  }
-
-  // Exp e;
-  public void visit(NewArray n) {
-    n.e.accept(this);
-  }
-
-  // Identifier i;
-  public void visit(NewObject n) {
-  }
-
-  // Exp e;
-  public void visit(Not n) {
-    n.e.accept(this);
-  }
-
-  // String s;
-  public void visit(Identifier n) {
-  }
-
-
-
 }
