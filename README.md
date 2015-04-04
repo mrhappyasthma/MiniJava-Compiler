@@ -39,5 +39,5 @@ We use the following set of Three-Address code instructions as our IR [represent
 
 ![Three-Address Code](http://i.imgur.com/prTDSmZ.png)
 
-##### Code Generation
+##### Code Generation  (To be done...)
 Lastly, the backend of the compiler generates MIPS Assembly code based on this Three-Address Code.  Our primary target is the MARS MIPS simulator from MSU.  You can read more and download MARS here: http://courses.missouristate.edu/kenvollmar/mars/
