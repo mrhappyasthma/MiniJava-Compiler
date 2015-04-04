@@ -24,9 +24,16 @@ Foo{
 	}
 }
 
+class Error{
+	public  Foo (int num){
+	return 1 ;
+    }
+}
+
 // Errors: 
 //			Statement - Line 3
 //			Formal Parameter - Line 8
 //          Variable Declaration - line 12
 //			Actual Parameter - line 16
 //			Class Body - Line 21
+//			Method Body - Line 28
