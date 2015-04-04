@@ -9,7 +9,9 @@ import syntaxtree.*;
 import visitor.*;
 import symboltable.*;
 import IR.*;
+import helper.*;
 import java.util.List;
+import java.util.Hashtable;
 
 public class MiniJavaCompiler
 {
@@ -67,10 +69,18 @@ public class MiniJavaCompiler
 					intermediateVisitor.visit(program);
 					
 					List<Quadruple> IRList = intermediateVisitor.getIR();
+					Hashtable<Quadruple, Label> labels = intermediateVisitor.getLabels();
 					
 					//Print IR
-					for(Quadruple q : IRList)
-						System.out.println(q.toString());
+					for(int i = 0; i < IRList.size(); i++)
+					{
+						if(labels.containsKey(IRList.get(i)))
+						{
+							System.out.println(labels.get(IRList.get(i)).toString());
+						}
+						
+						System.out.println(IRList.get(i).toString());
+					}
 				}
 			}
 		}

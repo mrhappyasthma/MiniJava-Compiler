@@ -14,6 +14,7 @@ public class IdentifierExp extends Exp
   public String s;
   public int lineNum;
   public int charNum;
+  public Variable t;
 
   public IdentifierExp(String as, int lineNum, int charNum) 
   { 
@@ -34,6 +35,13 @@ public class IdentifierExp extends Exp
   
   public Variable generateTAC()
   {
-	  return new Variable(s, "id");
+	  if(t == null)
+	  {
+		return new Variable(s, "id");
+	  }
+	  else
+	  {
+		return t;
+	  }
   }
 }

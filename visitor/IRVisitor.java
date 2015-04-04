@@ -7,6 +7,7 @@ package visitor;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import syntaxtree.*;
 import symboltable.*;
 import IR.*;
@@ -17,12 +18,19 @@ public class IRVisitor implements Visitor
 	private Scope currentScope;
 	private int blockNumber;
 	private List<Quadruple> IRList; 
+	private Hashtable<Quadruple, Label> labels;
 	
 	public IRVisitor(Scope symbolTable)
 	{
+		labels = new Hashtable<Quadruple, Label>();
 		IRList = new ArrayList<Quadruple>();
 		currentScope = symbolTable;
 		blockNumber = 0;
+	}
+	
+	public Hashtable<Quadruple, Label> getLabels()
+	{
+		return labels;
 	}
 	
 	public List<Quadruple> getIR()
@@ -59,6 +67,8 @@ public class IRVisitor implements Visitor
 		n.i1.accept(this);
     	n.i2.accept(this);
     	n.s.accept(this);
+		
+		labels.put(IRList.get(0), new Label());
 
 		currentScope = currentScope.exitScope(); //Exit "main" method
 		currentScope = currentScope.exitScope(); //Exit class
@@ -99,6 +109,7 @@ public class IRVisitor implements Visitor
 		{
        		n.vl.elementAt(i).accept(this);
     	}
+
     	for ( int i = 0; i < n.ml.size(); i++ ) 
 		{
 			n.ml.elementAt(i).accept(this);
@@ -128,6 +139,8 @@ public class IRVisitor implements Visitor
     	n.t.accept(this);
     	n.i.accept(this);
 		
+		int size = IRList.size();
+		
     	for ( int i = 0; i < n.fl.size(); i++ ) 
 		{
        		 n.fl.elementAt(i).accept(this);
@@ -139,10 +152,12 @@ public class IRVisitor implements Visitor
     	for ( int i = 0; i < n.sl.size(); i++ ) 
 		{
         	n.sl.elementAt(i).accept(this);
-    	}
+		}
 		
     	n.e.accept(this);
 		IRList.add(new ReturnIR(n.e.generateTAC()));
+		
+		labels.put(IRList.get(size), new Label());
 		
     	currentScope = currentScope.exitScope(); //Exit method
 	}
@@ -213,7 +228,7 @@ public class IRVisitor implements Visitor
 	{
 		n.i.accept(this);
 		n.e.accept(this);
-		IRList.add(new CopyIR(n.e.generateTAC(), n.i.toString()));
+		IRList.add(new CopyIR(n.e.generateTAC(), currentScope.lookupVariable(n.i.toString())));
 	}
 
 	// Identifier i;
@@ -223,7 +238,7 @@ public class IRVisitor implements Visitor
 		n.i.accept(this);
 		n.e1.accept(this);
 		n.e2.accept(this);
-		IRList.add(new IndexedAssignmentIR2(n.e2.generateTAC(), n.e1.generateTAC(), n.i.toString()));
+		IRList.add(new IndexedAssignmentIR2(n.e2.generateTAC(), n.e1.generateTAC(), currentScope.lookupVariable(n.i.toString())));
 	}
 
 	// Exp e1,e2;
@@ -317,7 +332,9 @@ public class IRVisitor implements Visitor
 
 	// String s;
 	public void visit(IdentifierExp n) 
-	{}
+	{
+		n.t = currentScope.lookupVariable(n.s);
+	}
 
 	public void visit(This n) 
 	{}
