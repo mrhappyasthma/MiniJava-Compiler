@@ -8,7 +8,7 @@ package IR;
 public class UnconditionalJumpIR extends Quadruple
 {
 	//goto LABEL
-	public UnconditionalJumpIR(Object operator, Object label)
+	public UnconditionalJumpIR(Object label)
 	{
 		op = "goto";      //goto
 		arg1 = null;

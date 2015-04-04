@@ -69,17 +69,32 @@ public class MiniJavaCompiler
 					intermediateVisitor.visit(program);
 					
 					List<Quadruple> IRList = intermediateVisitor.getIR();
-					Hashtable<Quadruple, Label> labels = intermediateVisitor.getLabels();
+					Hashtable<Quadruple, List<Label>> labels = intermediateVisitor.getLabels();
 					
 					//Print IR
 					for(int i = 0; i < IRList.size(); i++)
 					{
 						if(labels.containsKey(IRList.get(i)))
 						{
-							System.out.println(labels.get(IRList.get(i)).toString());
+							List<Label> temp = labels.get(IRList.get(i));
+							for(int j = 0; j < temp.size(); j++)
+							{
+								if(temp.get(j).printBefore)
+									System.out.println(temp.get(j).toString());
+							}
 						}
 						
-						System.out.println(IRList.get(i).toString());
+						System.out.println("\t" + IRList.get(i).toString());
+						
+						if(labels.containsKey(IRList.get(i)))
+						{
+							List<Label> temp = labels.get(IRList.get(i));
+							for(int j = 0; j < temp.size(); j++)
+							{
+								if(!temp.get(j).printBefore)
+									System.out.println(temp.get(j).toString());
+							}
+						}
 					}
 				}
 			}

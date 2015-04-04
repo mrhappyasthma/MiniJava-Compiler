@@ -9,10 +9,12 @@ public class Label
 {
 	private static int nextNumber;
 	private final int num;
+	public boolean printBefore;
 	
-	public Label()
+	public Label(boolean printBefore)
 	{
 		num = nextNumber++;
+		this.printBefore = printBefore;
 	}
 	
 	public String toString()

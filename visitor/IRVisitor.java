@@ -18,17 +18,17 @@ public class IRVisitor implements Visitor
 	private Scope currentScope;
 	private int blockNumber;
 	private List<Quadruple> IRList; 
-	private Hashtable<Quadruple, Label> labels;
+	private Hashtable<Quadruple, List<Label>> labels;
 	
 	public IRVisitor(Scope symbolTable)
 	{
-		labels = new Hashtable<Quadruple, Label>();
+		labels = new Hashtable<Quadruple, List<Label>>();
 		IRList = new ArrayList<Quadruple>();
 		currentScope = symbolTable;
 		blockNumber = 0;
 	}
 	
-	public Hashtable<Quadruple, Label> getLabels()
+	public Hashtable<Quadruple, List<Label>> getLabels()
 	{
 		return labels;
 	}
@@ -38,6 +38,33 @@ public class IRVisitor implements Visitor
 		return IRList;
 	}
 
+	//Helper function to add a new Label to a certain IR
+	public void addLabel(Quadruple q, boolean printBefore)
+	{
+		List<Label> temp = labels.get(q);
+		
+		if(temp == null)
+		{
+			temp = new ArrayList<Label>();
+		}
+
+		temp.add(new Label(printBefore));
+		labels.put(q, temp);
+	}
+	
+	public void addLabel(Quadruple q, Label l)
+	{
+		List<Label> temp = labels.get(q);
+		
+		if(temp == null)
+		{
+			temp = new ArrayList<Label>();
+		}
+		
+		temp.add(l);
+		labels.put(q, temp);
+	}
+	
 	//Helper function to create unique numbers (as strings) for the blocks
 	public String nextBlockNumber()
 	{
@@ -68,7 +95,7 @@ public class IRVisitor implements Visitor
     	n.i2.accept(this);
     	n.s.accept(this);
 		
-		labels.put(IRList.get(0), new Label());
+		addLabel(IRList.get(0), true);
 
 		currentScope = currentScope.exitScope(); //Exit "main" method
 		currentScope = currentScope.exitScope(); //Exit class
@@ -149,7 +176,7 @@ public class IRVisitor implements Visitor
 		{
         	n.vl.elementAt(i).accept(this);
     	}
-    	for ( int i = 0; i < n.sl.size(); i++ ) 
+    	for ( int i = 0; i < n.sl.size(); i++ )
 		{
         	n.sl.elementAt(i).accept(this);
 		}
@@ -157,7 +184,7 @@ public class IRVisitor implements Visitor
     	n.e.accept(this);
 		IRList.add(new ReturnIR(n.e.generateTAC()));
 		
-		labels.put(IRList.get(size), new Label());
+		addLabel(IRList.get(size), true);
 		
     	currentScope = currentScope.exitScope(); //Exit method
 	}
@@ -201,17 +228,43 @@ public class IRVisitor implements Visitor
 	// Statement s1,s2;
 	public void visit(If n) 
 	{
+		Label L1 = new Label(true);
+		Label L2 = new Label(true);
+		Label L3 = new Label(false);
+		
 		n.e.accept(this);
+		
+		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L2)); 
+		addLabel(IRList.get(IRList.size()-1), L1);
+		
 		n.s1.accept(this);
+		IRList.add(new UnconditionalJumpIR(L3));
+		
+		int size = IRList.size();
+		
 		n.s2.accept(this);
+		
+		addLabel(IRList.get(size), L2);
+		addLabel(IRList.get(IRList.size()-1), L3);
 	}
 
 	// Exp e;
 	// Statement s;
 	public void visit(While n) 
 	{		
+		Label L1 = new Label(true);
+		Label L2 = new Label(false);
+		
 		n.e.accept(this);
+		
+		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L2)); 
+		addLabel(IRList.get(IRList.size()-1), L1);
+	
 		n.s.accept(this);
+
+		IRList.add(new UnconditionalJumpIR(L1));
+		
+		addLabel(IRList.get(IRList.size()-1), L2);
 	}
 
 	// Exp e;
@@ -333,7 +386,7 @@ public class IRVisitor implements Visitor
 	// String s;
 	public void visit(IdentifierExp n) 
 	{
-		n.t = currentScope.lookupVariable(n.s);
+			n.t = currentScope.lookupVariable(n.s);
 	}
 
 	public void visit(This n) 
