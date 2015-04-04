@@ -10,7 +10,7 @@ public class ClassDeclList {
    }
 
    public void addElement(ClassDecl n) {
-      list.addElement(n);
+      list.add(0, n);
    }
 
    public ClassDecl elementAt(int i)  { 

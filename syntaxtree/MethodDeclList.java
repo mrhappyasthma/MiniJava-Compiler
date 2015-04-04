@@ -10,7 +10,7 @@ public class MethodDeclList {
    }
 
    public void addElement(MethodDecl n) {
-      list.addElement(n);
+      list.add(0, n);
    }
 
    public MethodDecl elementAt(int i)  { 

@@ -10,7 +10,7 @@ public class StatementList {
    }
 
    public void addElement(Statement n) {
-      list.addElement(n);
+      list.add(0, n);
    }
 
    public Statement elementAt(int i)  { 
