@@ -292,8 +292,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
-	
-	if(symTable.isClass(n.i.s)){
+	else if(symTable.isClass(n.i.s)){
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
@@ -320,6 +319,11 @@ public class TypeCheckingVisitor implements TypeVisitor {
 				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
 			}
 		}
+	}
+	
+	if(!compareTypes(strToType(n.i.s), t) && !errorDetected){
+		errorDetected = true;
+		System.out.println("Type mismatch during assignment at line " + n.lineNum + ", character " + n.charNum);
 	}
 	
 	return null;
