@@ -5,11 +5,16 @@ import symboltable.*;
 
 public class TypeCheckingVisitor extends DepthFirstVisitor {
 	private Scope currentScope;
-	public boolean errorDetected;
+	private ClassSymbolTable currClass;
+        private MethodSymbolTable currMethod;
+        private SymbolTable symTable;
+        public boolean errorDetected;
 	private int blockNumber;
+	
 	public TypeCheckingVisitor(Scope s){
 		currentScope = s; 
 		errorDetected = false;
+                symTable = (SymbolTable)currentScope;
 		blockNumber=0;
 	}
 	//create numbers (as strings) for the blocks
@@ -17,6 +22,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 		blockNumber++;
 		return ("" + blockNumber);
 	}
+
 
 	//Helper function to turn Type into String containing the type:  i.e. "int", "boolean", etc.
 	public String getTypeStr(Type t){
@@ -38,15 +44,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 		
 		return type;
 	}
-	//function to check if the name is of a method or not
-	public boolean isMethod (String name){
-		
-		return false;
-	}
-	public boolean isClass (String name){
 
-		return false;
-	}
 	
   // MainClass m;
   // ClassDeclList cl;
@@ -60,8 +58,11 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // Identifier i1,i2;
   // Statement s;
   public void visit(MainClass n) {
+        
 	currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
-    currentScope = currentScope.enterScope("main");    
+        currClass = (ClassSymbolTable) currentScope;
+        currentScope = currentScope.enterScope("main");
+        currMethod = (MethodSymbolTable)currentScope;
 		
 	n.i1.accept(this);
     	n.i2.accept(this);
@@ -76,8 +77,8 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // MethodDeclList ml;
   public void visit(ClassDeclSimple n) {
 	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
-		
-   		 n.i.accept(this);
+	currClass = (ClassSymbolTable) currentScope;	
+        n.i.accept(this);
     	for ( int i = 0; i < n.vl.size(); i++ ) {
        		 n.vl.elementAt(i).accept(this);
     	}
@@ -94,7 +95,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // MethodDeclList ml;
   public void visit(ClassDeclExtends n) {
     	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
-		
+	currClass = (ClassSymbolTable) currentScope;	
     	n.i.accept(this);
     	n.j.accept(this);
     	for ( int i = 0; i < n.vl.size(); i++ ) {
@@ -102,8 +103,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
     	}
     	for ( int i = 0; i < n.ml.size(); i++ ) {
 			n.ml.elementAt(i).accept(this);
-    	}
-		
+    	}		
     	currentScope =currentScope.exitScope(); //Exit class
     }
 
@@ -121,8 +121,8 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // StatementList sl;
   // Exp e;
   public void visit(MethodDecl n) {
-		currentScope = currentScope.enterScope(n.i.toString()); //Enter method
-		
+	currentScope = currentScope.enterScope(n.i.toString()); //Enter method
+	currMethod = (MethodSymbolTable)currentScope;	
     	n.t.accept(this);
     	n.i.accept(this);
     	for ( int i = 0; i < n.fl.size(); i++ ) {
@@ -134,7 +134,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
     	for ( int i = 0; i < n.sl.size(); i++ ) {
         	n.sl.elementAt(i).accept(this);
     	}
-    	n.e.accept(this);
+    	n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
 		
     	currentScope = currentScope.exitScope(); //Exit method
      }
@@ -174,8 +174,8 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // Exp e;
   // Statement s1,s2;
   public void visit(If n) {
-    	if(!(n.e.accept(new TypeCheckingExpVisitor(currentScope)) instanceof BooleanType) ){
-		System.out.println("Non-boolean expression used as the confition of if statement at line 0, character 0");
+    	if(!(n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable)) instanceof BooleanType) ){
+		System.out.println("Non-boolean expression used as the condition of if statement at line 0, character 0");
 	}
     	n.s1.accept(this);
     	n.s2.accept(this);
@@ -184,52 +184,47 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // Exp e;
   // Statement s;
   public void visit(While n) {
-	if(!(n.e.accept(new TypeCheckingExpVisitor(currentScope)) instanceof BooleanType) ){
-                System.out.println("Non-boolean expression used as the confition of while statement at line 0, character 0");
+	if(!(n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable)) instanceof BooleanType) ){
+                errorDetected=true;
+		System.out.println("Non-boolean expression used as the condition of while statement at line 0, character 0");
         }
     	n.s.accept(this);
   }
 
   // Exp e;
   public void visit(Print n) {
-    n.e.accept(this);
+    n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
   }
   
   // Identifier i;
   // Exp e;
   public void visit(Assign n) {
     	n.i.accept(this);
-	//assign from a class or method name
-		//System.out.println("Invalid l-value, "+n.i.s+" is a Method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
-
-                //System.out.println("Invalid l-value, "+n.i.s+" is a Class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	
-	
-	//assign to a class or method name, or the keyword this
-	boolean aux; 
-	aux = isMethod(n.i.s);
 	if(n.i.s.equals("this")){
+		errorDetected=true;
 		System.out.println("Invalid l-value, "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
-	if(aux){
-		System.out.println("Invalid l-value, "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	if(symTable.isClass(n.i.s)){
+		errorDetected=true;
+		System.out.println("Invalid l-value, "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else{
-		aux = isClass(n.i.s);
-		if(aux){
-			System.out.println("Invalid l-value, "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		if(currClass.isMethod(n.i.s)){
+			errorDetected=true;
+			System.out.println("Invalid l-value, "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 		}
 		
 	}
 
  }
-
   // Identifier i;
   // Exp e1,e2;
   public void visit(ArrayAssign n) {
     n.i.accept(this);
-    n.e1.accept(this);
-    n.e2.accept(this);
+    n.e1.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
+    n.e2.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
 
   }
 }
+

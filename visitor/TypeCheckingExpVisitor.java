@@ -4,11 +4,18 @@ import syntaxtree.*;
 import symboltable.*;
 
 public class TypeCheckingExpVisitor extends TypeDepthFirstVisitor {
+	
+	MethodSymbolTable currMethod;
+	ClassSymbolTable currClass;
+	SymbolTable symTable;
 
 
-	Scope currentScope;
-	public TypeCheckingExpVisitor(Scope s){
-		currentScope = s;
+	public TypeCheckingExpVisitor(MethodSymbolTable m, ClassSymbolTable c, SymbolTable s){
+		
+		currMethod = m;
+		currClass = c;
+		symTable = s;
+
 	}
 
   // Exp e1,e2;
@@ -87,7 +94,14 @@ public class TypeCheckingExpVisitor extends TypeDepthFirstVisitor {
   // Identifier i;
   // ExpList el;
   public Type visit(Call n) {
-    n.e.accept(this);
+	//call something that isn't a method
+    	String methName = n.i.s;
+	String className = ((IdentifierType) n.e.accept(this)).s;
+	ClassSymbolTable cst = symTable.getClass(className);
+	if(!(cst.isMethod(methName))){
+		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
+	}
+	n.e.accept(this);
     n.i.accept(this);
     for ( int i = 0; i < n.el.size(); i++ ) {
         n.el.elementAt(i).accept(this);
@@ -110,12 +124,13 @@ public class TypeCheckingExpVisitor extends TypeDepthFirstVisitor {
 
   // String s;
   public Type visit(IdentifierExp n) {
-	//return var type
-	return null;
+	//???? NOT SURE IF IT IS WHAT I NEED
+	return new IdentifierType(n.s);
   }
 
   public Type visit(This n) {
-	//return current class type
+	//currClass == main class?
+	//return currClass type
 	return null;
   }
 
@@ -132,12 +147,14 @@ public class TypeCheckingExpVisitor extends TypeDepthFirstVisitor {
 
   // Exp e;
   public Type visit(Not n) {
-	n.e.accept(this);
-	return new BooleanType();
+	if(!(n.e.accept(this) instanceof BooleanType )){
+                System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
+        }
+        return new BooleanType();
   }
 
   // String s;
   public Type visit(Identifier n) {
-	return null;	
+	return new IdentifierType(n.s);	
   }
 }
