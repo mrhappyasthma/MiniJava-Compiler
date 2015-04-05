@@ -3,7 +3,7 @@ package visitor;
 import syntaxtree.*;
 import symboltable.*;
 
-public class TypeCheckingVisitor extends DepthFirstVisitor {
+public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
 	private Scope currentScope;
 	private ClassSymbolTable currClass;
         private MethodSymbolTable currMethod;
@@ -22,7 +22,23 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 		blockNumber++;
 		return ("" + blockNumber);
 	}
+	public boolean compareTypes(Type t1, Type t2){
+		if(t1 instanceof IntegerType && t2 instanceof IntegerType){
+			return true;
+		}	
+		if(t1 instanceof BooleanType && t2 instanceof BooleanType){
+                        return true;
+                }
+		if(t1 instanceof IntArrayType && t2 instanceof IntArrayType){
+                        return true;
+                }
+		if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
+                        return true;
+                }
+		
+		return false;
 
+	}
 
 	//Helper function to turn Type into String containing the type:  i.e. "int", "boolean", etc.
 	public String getTypeStr(Type t){
@@ -48,16 +64,17 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 	
   // MainClass m;
   // ClassDeclList cl;
-  public void visit(Program n) {
-		n.m.accept(this);
-		for ( int i = 0; i < n.cl.size(); i++ ) {
-			n.cl.elementAt(i).accept(this);
-		}
+  public Type visit(Program n) {
+	n.m.accept(this);
+	for ( int i = 0; i < n.cl.size(); i++ ) {
+		n.cl.elementAt(i).accept(this);
+	}
+  	return null;
   }
   
   // Identifier i1,i2;
   // Statement s;
-  public void visit(MainClass n) {
+  public Type visit(MainClass n) {
         
 	currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
         currClass = (ClassSymbolTable) currentScope;
@@ -70,12 +87,13 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 
 	currentScope = currentScope.exitScope(); //Exit "main" method
 	currentScope = currentScope.exitScope(); //Exit class
-   }
+  	return null; 
+  }
   
   // Identifier i;
   // VarDeclList vl;
   // MethodDeclList ml;
-  public void visit(ClassDeclSimple n) {
+  public Type visit(ClassDeclSimple n) {
 	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
 	currClass = (ClassSymbolTable) currentScope;	
         n.i.accept(this);
@@ -87,13 +105,14 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
     	}
 			
    	currentScope = currentScope.exitScope(); //Exit class
-  	}
+  	return null;	
+  }
  
   // Identifier i;
   // Identifier j;
   // VarDeclList vl;
   // MethodDeclList ml;
-  public void visit(ClassDeclExtends n) {
+  public Type visit(ClassDeclExtends n) {
     	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
 	currClass = (ClassSymbolTable) currentScope;	
     	n.i.accept(this);
@@ -105,13 +124,15 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 			n.ml.elementAt(i).accept(this);
     	}		
     	currentScope =currentScope.exitScope(); //Exit class
-    }
+   	return null; 
+   }
 
   // Type t;
   // Identifier i;
-  public void visit(VarDecl n) {
+  public Type visit(VarDecl n) {
     n.t.accept(this);
     n.i.accept(this);
+    return null;
   }
 
   // Type t;
@@ -120,7 +141,7 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
   // VarDeclList vl;
   // StatementList sl;
   // Exp e;
-  public void visit(MethodDecl n) {
+  public Type visit(MethodDecl n) {
 	currentScope = currentScope.enterScope(n.i.toString()); //Enter method
 	currMethod = (MethodSymbolTable)currentScope;	
     	n.t.accept(this);
@@ -134,33 +155,39 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
     	for ( int i = 0; i < n.sl.size(); i++ ) {
         	n.sl.elementAt(i).accept(this);
     	}
-    	n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
+    	n.e.accept(this);
 		
     	currentScope = currentScope.exitScope(); //Exit method
-     }
+  	return null;   
+  }
 
   // Type t;
   // Identifier i;
-  public void visit(Formal n) {
+  public Type visit(Formal n) {
     n.t.accept(this);
     n.i.accept(this);
+    return null;
   }
 
-  public void visit(IntArrayType n) {
+  public Type visit(IntArrayType n) {
+  	return null;
   }
 
-  public void visit(BooleanType n) {
+  public Type visit(BooleanType n) {
+  	return null;
   }
 
-  public void visit(IntegerType n) {
+  public Type visit(IntegerType n) {
+  	return null;
   }
 
   // String s;
-  public void visit(IdentifierType n) {
+  public Type visit(IdentifierType n) {
+  	return null;
   }
 
   // StatementList sl;
-  public void visit(Block n) {
+  public Type visit(Block n) {
 		String blockNum = nextBlockNumber();
 		currentScope = currentScope.enterScope(blockNum); //Enter block
 		
@@ -169,36 +196,40 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 		}
 		
 		currentScope = currentScope.exitScope(); //Exit block
-    }
+  		return null;  
+  }
 
   // Exp e;
   // Statement s1,s2;
-  public void visit(If n) {
-    	if(!(n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable)) instanceof BooleanType) ){
+  public Type visit(If n) {
+    	if(!(n.e.accept(this) instanceof BooleanType) ){
 		System.out.println("Non-boolean expression used as the condition of if statement at line 0, character 0");
 	}
     	n.s1.accept(this);
     	n.s2.accept(this);
+  	return null;
   }
 
   // Exp e;
   // Statement s;
-  public void visit(While n) {
-	if(!(n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable)) instanceof BooleanType) ){
+  public Type visit(While n) {
+	if(!(n.e.accept(this) instanceof BooleanType) ){
                 errorDetected=true;
 		System.out.println("Non-boolean expression used as the condition of while statement at line 0, character 0");
         }
     	n.s.accept(this);
+	return null;
   }
 
   // Exp e;
-  public void visit(Print n) {
-    n.e.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
+  public Type visit(Print n) {
+    	n.e.accept(this);
+  	return null;
   }
   
   // Identifier i;
   // Exp e;
-  public void visit(Assign n) {
+  public Type visit(Assign n) {
     	n.i.accept(this);
 	
 	if(n.i.s.equals("this")){
@@ -216,15 +247,157 @@ public class TypeCheckingVisitor extends DepthFirstVisitor {
 		}
 		
 	}
+	return null;
 
  }
   // Identifier i;
   // Exp e1,e2;
-  public void visit(ArrayAssign n) {
+  public Type visit(ArrayAssign n) {
     n.i.accept(this);
-    n.e1.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
-    n.e2.accept(new TypeCheckingExpVisitor(currMethod, currClass, symTable));
+    n.e1.accept(this);
+    n.e2.accept(this);
+	return null;
+  }
+
+// Exp e1,e2;
+  public Type visit(And n) {
+	if(!(n.e1.accept(this) instanceof BooleanType) || !(n.e2.accept(this) instanceof BooleanType )){
+		System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
+	}
+    	return new BooleanType();
+  }
+
+  // Exp e1,e2;
+  public Type visit(LessThan n) {
+        if (!( n.e1.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator <, at line 0, character 0");   
+        }
+        if(! (n.e2.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator <, at line 0, character 0");   
+        }
+	return new BooleanType();
+
+   
+  }
+
+  // Exp e1,e2;
+  public Type visit(Plus n) {
+	if (!(n.e1.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator +, at line 0, character 0");   
+        }
+        if(! (n.e2.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator +, at line 0, character 0");   
+        }
+	return new IntegerType();
 
   }
+
+  // Exp e1,e2;
+  public Type visit(Minus n) {
+	if (!( n.e1.accept(this) instanceof IntegerType)){
+		System.out.println("Non-integer operand for operator -, at line 0, character 0");	
+	}
+	if(! (n.e2.accept(this) instanceof IntegerType)){
+		System.out.println("Non-integer operand for operator -, at line 0, character 0");   
+	}
+	return new IntegerType();
+  }
+
+  // Exp e1,e2;
+  public Type visit(Times n) {
+	if (!( n.e1.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator *, at line 0, character 0");   
+        }
+        if(! (n.e2.accept(this) instanceof IntegerType)){
+                System.out.println("Non-integer operand for operator *, at line 0, character 0");   
+        }
+	return new IntegerType();
+
+   
+  }
+
+  // Exp e1,e2;
+  public Type visit(ArrayLookup n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+    return new IntegerType();
+  }
+
+  // Exp e;
+  public Type visit(ArrayLength n) {
+	if(!(n.e.accept(this) instanceof IntArrayType)){
+		System.out.println("Length property only applies to arrays line 0, character 0");
+	}
+	return new IntegerType();  
+  }
+
+  // Exp e;
+  // Identifier i;
+  // ExpList el;
+  public Type visit(Call n) {
+	//call something that isn't a method
+    	String methName = n.i.s;
+	String className = ((IdentifierType) n.e.accept(this)).s;
+	ClassSymbolTable cst = symTable.getClass(className);
+	if(!(cst.isMethod(methName))){
+		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
+	}
+	n.e.accept(this);
+    	n.i.accept(this);
+    	for ( int i = 0; i < n.el.size(); i++ ) {
+        	n.el.elementAt(i).accept(this);
+    	}
+  	return null;	
+  }
+
+  // int i;
+  public Type visit(IntegerLiteral n) {
+	return new IntegerType();
+  }
+
+  public Type visit(True n) {
+	return new BooleanType();
+  }
+
+  public Type visit(False n) {
+	return new BooleanType();
+  }
+
+  // String s;
+  public Type visit(IdentifierExp n) {
+	//???? NOT SURE IF IT IS WHAT I NEED
+	return new IdentifierType(n.s);
+  }
+
+  public Type visit(This n) {
+	//currClass == main class?
+	//return currClass type
+	return null;
+  }
+
+  // Exp e;
+  public Type visit(NewArray n) {
+    n.e.accept(this);
+	return new IntArrayType();
+  }
+
+  // Identifier i;
+  public Type visit(NewObject n) {
+	return new IdentifierType(n.i.s);
+}
+
+  // Exp e;
+  public Type visit(Not n) {
+	if(!(n.e.accept(this) instanceof BooleanType )){
+                System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
+        }
+        return new BooleanType();
+  }
+
+  // String s;
+  public Type visit(Identifier n) {
+	return new IdentifierType(n.s);	
+  }
+
 }
 
