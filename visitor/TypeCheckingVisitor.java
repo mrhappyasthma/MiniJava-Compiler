@@ -379,59 +379,49 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(And n) {
-	if(!isBoolean(n.e1.accept(this))){
-        System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");   
+	if(!isBoolean(n.e1.accept(this)) || !isBoolean(n.e2.accept(this))){
+		errorDetected = true;
+        System.out.println("Attempt to use boolean operator && on non-boolean operands at line " + n.lineNum + ", character " + n.charNum);   
 	}
-    if(!isBoolean(n.e1.accept(this))){
-        System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
-    }
 
     return new BooleanType();
    }
 
   // Exp e1,e2;
   public Type visit(LessThan n) {
-    if(!isInteger(n.e1.accept(this))){
-        System.out.println("Non-integer operand for operator <, at line 0, character 0");   
+    if(!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+		errorDetected = true;
+        System.out.println("Non-integer operand for operator <, at line " + n.lineNum + ", character " + n.charNum);   
 	}
-    if(!isInteger(n.e1.accept(this))){
-        System.out.println("Non-integer operand for operator <, at line 0, character 0");   
-    }
 	
 	return new BooleanType();
   }
 
   // Exp e1,e2;
   public Type visit(Plus n) {
-	if (!isInteger(n.e1.accept(this))){
-        System.out.println("Non-integer operand for operator +, at line 0, character 0");   
+	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+		errorDetected = true;
+        System.out.println("Non-integer operand for operator +, at line " + n.lineNum + ", character " + n.charNum);   
     }
-    if(!isInteger(n.e2.accept(this))){
-        System.out.println("Non-integer operand for operator +, at line 0, character 0");   
-    }
-	
+
 	return new IntegerType();
   }
 
   // Exp e1,e2;
   public Type visit(Minus n) {
-	if (!isInteger(n.e1.accept(this))){
-		System.out.println("Non-integer operand for operator -, at line 0, character 0");	
+	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+		errorDetected = true;
+		System.out.println("Non-integer operand for operator -, at line " + n.lineNum + ", character " + n.charNum);	
 	}
-	if(!isInteger(n.e2.accept(this))){
-		System.out.println("Non-integer operand for operator -, at line 0, character 0");   
-	}
+
 	return new IntegerType();
   }
 
   // Exp e1,e2;
   public Type visit(Times n) {
-	if (!isInteger(n.e1.accept(this))){
-       System.out.println("Non-integer operand for operator *, at line 0, character 0");   
-    }
-		
-    if(!isInteger(n.e2.accept(this))){
-        System.out.println("Non-integer operand for operator *, at line 0, character 0");   
+	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+		errorDetected = true;
+        System.out.println("Non-integer operand for operator *, at line " + n.lineNum + ", character " + n.charNum);    
     }
 		
 	return new IntegerType();
@@ -447,6 +437,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Exp e;
   public Type visit(ArrayLength n) {
 	if(!isIntArray(n.e.accept(this))){
+		errorDetected = true;
 		System.out.println("Length property only applies to arrays line 0, character 0");
 	}
 	

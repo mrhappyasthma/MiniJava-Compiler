@@ -13,10 +13,14 @@ public class And extends Exp
 {
   public Exp e1,e2;
   public Variable t;
+  public int lineNum;
+  public int charNum;
   
-  public And(Exp ae1, Exp ae2) 
+  public And(Exp ae1, Exp ae2, int lineNum, int charNum)
   { 
     e1=ae1; e2=ae2;
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) 

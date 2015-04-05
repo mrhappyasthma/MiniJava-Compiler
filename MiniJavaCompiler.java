@@ -59,7 +59,7 @@ public class MiniJavaCompiler
 					typeCheckVisitor.visit(program);
 					
 					//If any errors occured, do not generate IR
-					if(bstVisitor.errorDetected | undefinedVisitor.errorDetected | typeCheckVisitor.errorDetected) 
+					if(bstVisitor.errorDetected || undefinedVisitor.errorDetected || typeCheckVisitor.errorDetected) 
 					{
 						return;
 					}

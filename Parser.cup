@@ -220,20 +220,20 @@ statementChain ::= statement:stmt statementChain:sc
 				   {: RESULT = new StatementList(); :}
 				   ;
 
-expression ::= expression:e1 AND expression:e2
-			   {: RESULT = new And(e1, e2); :}
+expression ::= expression:e1 AND:a expression:e2
+			   {: RESULT = new And(e1, e2, a.getLine(), a.getCol()); :}
 			   |
-			   expression:e1 LESSTHAN expression:e2
-			   {: RESULT = new LessThan(e1, e2); :}
+			   expression:e1 LESSTHAN:l expression:e2
+			   {: RESULT = new LessThan(e1, e2, l.getLine(), l.getCol()); :}
 			   |
-			   expression:e1 PLUS expression:e2
-			   {: RESULT = new Plus(e1, e2); :}
+			   expression:e1 PLUS:p expression:e2
+			   {: RESULT = new Plus(e1, e2, p.getLine(), p.getCol()); :}
 			   |
-			   expression:e1 MINUS expression:e2
-			   {: RESULT = new Minus(e1, e2); :}
+			   expression:e1 MINUS:m expression:e2
+			   {: RESULT = new Minus(e1, e2, m.getLine(), m.getCol()); :}
 			   |
-			   expression:e1 STAR expression:e2
-			   {: RESULT = new Times(e1, e2); :}
+			   expression:e1 STAR:s expression:e2
+			   {: RESULT = new Times(e1, e2, s.getLine(), s.getCol()); :}
 			   |
 			   expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET
 			   {: RESULT = new ArrayLookup(e1, e2); :}
