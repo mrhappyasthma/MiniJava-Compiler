@@ -56,7 +56,11 @@ public class TypeCheckingVisitor implements TypeVisitor {
 			return new BooleanType();
 		}
 		else{
-			return new IdentifierType(str);
+			Variable v = currentScope.lookupVariable(str);
+			if(v == null)
+				return new IdentifierType(str);
+			else
+				return strToType(v.getType());
 		}
 	}
 
@@ -67,7 +71,39 @@ public class TypeCheckingVisitor implements TypeVisitor {
 			return true;
 		
 		if(t instanceof IdentifierType){
-			if(strToType(((IdentifierType)t).s) instanceof IdentifierType)
+			if(strToType(((IdentifierType)t).s) instanceof IntegerType)
+				return true;
+			else
+				return false;
+		}
+		
+		return false;
+	}
+	
+	//Helper function to check if we have a valid boolean types
+	public boolean isBoolean(Type t)
+	{
+		if(t instanceof BooleanType)
+			return true;
+		
+		if(t instanceof IdentifierType){
+			if(strToType(((IdentifierType)t).s) instanceof BooleanType)
+				return true;
+			else
+				return false;
+		}
+		
+		return false;
+	}
+	
+	//Helper function to check if we have a valid int array types
+	public boolean isIntArray(Type t)
+	{
+		if(t instanceof IntArrayType)
+			return true;
+		
+		if(t instanceof IdentifierType){
+			if(strToType(((IdentifierType)t).s) instanceof IntArrayType)
 				return true;
 			else
 				return false;
@@ -216,22 +252,26 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Exp e;
   // Statement s1,s2;
   public Type visit(If n) {
-    	if(!(n.e.accept(this) instanceof BooleanType) ){
+    if(!isBoolean(n.e.accept(this))){
 		System.out.println("Non-boolean expression used as the condition of if statement at line 0, character 0");
 	}
-    	n.s1.accept(this);
-    	n.s2.accept(this);
+	
+    n.s1.accept(this);
+    n.s2.accept(this);
+	
   	return null;
   }
 
   // Exp e;
   // Statement s;
   public Type visit(While n) {
-	if(!(n.e.accept(this) instanceof BooleanType) ){
-                errorDetected=true;
+	if(!isBoolean(n.e.accept(this))){
+        errorDetected=true;
 		System.out.println("Non-boolean expression used as the condition of while statement at line 0, character 0");
-        }
-    	n.s.accept(this);
+    }
+    	
+	n.s.accept(this);
+	
 	return null;
   }
 
@@ -275,9 +315,13 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(And n) {
-    if(!(n.e1.accept(this) instanceof BooleanType) || !(n.e2.accept(this) instanceof BooleanType )){
-		System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
+	if(!isBoolean(n.e1.accept(this))){
+        System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");   
 	}
+    if(!isBoolean(n.e1.accept(this))){
+        System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
+    }
+
     return new BooleanType();
    }
 
@@ -338,7 +382,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e;
   public Type visit(ArrayLength n) {
-	if(!(n.e.accept(this) instanceof IntArrayType)){
+	if(!isIntArray(n.e.accept(this))){
 		System.out.println("Length property only applies to arrays line 0, character 0");
 	}
 	
@@ -412,7 +456,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e;
   public Type visit(Not n) {
-	if(!(n.e.accept(this) instanceof BooleanType )){
+	if(!isBoolean(n.e.accept(this))){
 		System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
     }
 
@@ -421,7 +465,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // String s;
   public Type visit(Identifier n) {
-	return new IdentifierType(n.s);	
+	return strToType(n.s);	
   }
 }
 
