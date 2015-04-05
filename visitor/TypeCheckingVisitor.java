@@ -321,6 +321,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		}
 	}
 	
+	//Check for type mismatch
 	if(!compareTypes(strToType(n.i.s), t) && !errorDetected){
 		errorDetected = true;
 		System.out.println("Type mismatch during assignment at line " + n.lineNum + ", character " + n.charNum);
@@ -333,7 +334,46 @@ public class TypeCheckingVisitor implements TypeVisitor {
   public Type visit(ArrayAssign n) {
     n.i.accept(this);
     n.e1.accept(this);
-    n.e2.accept(this);
+    Type t = n.e2.accept(this);
+	
+	//Check for invalid l-values
+	if(n.i.s.equals("this")){
+		errorDetected=true;
+		System.out.println("Invalid l-value: "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	}
+	else if(symTable.isClass(n.i.s)){
+		errorDetected=true;
+		System.out.println("Invalid l-value: "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+	}
+	else{
+		if(currClass.isMethod(n.i.s)){
+			errorDetected=true;
+			System.out.println("Invalid l-value: "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		}		
+	}
+	
+	//Check for invalid r-values
+	if(t instanceof IdentifierType){
+		IdentifierType id = (IdentifierType) t;
+		
+		if(symTable.isClass(id.s)){
+			errorDetected = true;
+			System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
+		}
+		else{
+			if(currClass.isMethod(id.s)){
+				errorDetected = true;
+				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
+			}
+		}
+	}
+	
+	//Check for type mismatch
+	if(!compareTypes(new IntegerType(), t) && !errorDetected){
+		errorDetected = true;
+		System.out.println("Type mismatch during assignment at line " + n.lineNum + ", character " + n.charNum);
+	}
+	
 	return null;
   }
 
