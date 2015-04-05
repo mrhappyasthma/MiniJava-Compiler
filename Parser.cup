@@ -238,8 +238,8 @@ expression ::= expression:e1 AND:a expression:e2
 			   expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET
 			   {: RESULT = new ArrayLookup(e1, e2); :}
 			   |
-			   expression:e1 PERIOD LENGTH
-			   {: RESULT = new ArrayLength(e1); :}
+			   expression:e1 PERIOD:p LENGTH
+			   {: RESULT = new ArrayLength(e1, p.getLine(), p.getCol()); :}
 			   |
 			   expression:e1 PERIOD:p identifier:id LEFTPAREN RIGHTPAREN
 			   {:

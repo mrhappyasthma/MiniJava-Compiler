@@ -438,7 +438,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
   public Type visit(ArrayLength n) {
 	if(!isIntArray(n.e.accept(this))){
 		errorDetected = true;
-		System.out.println("Length property only applies to arrays line 0, character 0");
+		System.out.println("Length property only applies to arrays line " + n.lineNum + ", character " + n.charNum);
 	}
 	
 	return new IntegerType();  

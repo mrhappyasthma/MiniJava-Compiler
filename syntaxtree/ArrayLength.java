@@ -13,10 +13,14 @@ public class ArrayLength extends Exp
 {
   public Exp e;
   public Variable t;
+  public int lineNum;
+  public int charNum;
   
-  public ArrayLength(Exp ae) 
+  public ArrayLength(Exp ae, int lineNum, int charNum) 
   {
     e=ae; 
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) 
