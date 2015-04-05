@@ -10,7 +10,7 @@ public class VarDeclList {
    }
 
    public void addElement(VarDecl n) {
-      list.add(0, n);
+      list.addElement(n);
    }
 
    public VarDecl elementAt(int i)  { 
