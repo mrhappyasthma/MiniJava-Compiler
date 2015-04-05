@@ -287,23 +287,42 @@ public class TypeCheckingVisitor implements TypeVisitor {
   public Type visit(Assign n) {
     	n.i.accept(this);
 	
+	//Check for invalid l-values
 	if(n.i.s.equals("this")){
 		errorDetected=true;
-		System.out.println("Invalid l-value, "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		System.out.println("Invalid l-value: "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
+	
 	if(symTable.isClass(n.i.s)){
 		errorDetected=true;
-		System.out.println("Invalid l-value, "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		System.out.println("Invalid l-value: "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else{
 		if(currClass.isMethod(n.i.s)){
 			errorDetected=true;
-			System.out.println("Invalid l-value, "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
-		}
-		
+			System.out.println("Invalid l-value: "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
+		}		
 	}
+	
+	//Check for invalid r-values
+	Type t = n.e.accept(this);
+	
+	if(t instanceof IdentifierType){
+		IdentifierType id = (IdentifierType) t;
+		
+		if(symTable.isClass(id.s)){
+			errorDetected = true;
+			System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
+		}
+		else{
+			if(currClass.isMethod(id.s)){
+				errorDetected = true;
+				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
+			}
+		}
+	}
+	
 	return null;
-
  }
   // Identifier i;
   // Exp e1,e2;

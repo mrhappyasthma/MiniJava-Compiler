@@ -199,8 +199,8 @@ statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
 			  PRINTLN LEFTPAREN expression:e1 RIGHTPAREN SEMICOLON
 			  {: RESULT = new Print(e1); :}
 			  |
-			  identifier:id ASSIGNMENT expression:e1 SEMICOLON
-			  {: RESULT = new Assign(id, e1); :}
+			  identifier:id ASSIGNMENT:a expression:e1 SEMICOLON
+			  {: RESULT = new Assign(id, e1, a.getLine(), a.getCol()); :}
 			  |
 			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT expression:e2 SEMICOLON
 			  {: RESULT = new ArrayAssign(id, e1, e2); :}
