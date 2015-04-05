@@ -23,6 +23,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		return ("" + blockNumber);
 	}
 	
+	//Helper function to compare types
 	public boolean compareTypes(Type t1, Type t2){
 		if(t1 instanceof IntegerType && t2 instanceof IntegerType){
 			return true;
@@ -41,7 +42,6 @@ public class TypeCheckingVisitor implements TypeVisitor {
         }
 		
 		return false;
-
 	}
 
 	//Helper function to turn Strings (i.e. "int", "boolean", etc.) into Type
@@ -60,6 +60,21 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		}
 	}
 
+	//Helper function to check if we have a valid integer types
+	public boolean isInteger(Type t)
+	{
+		if(t instanceof IntegerType)
+			return true;
+		
+		if(t instanceof IdentifierType){
+			if(strToType(((IdentifierType)t).s) instanceof IdentifierType)
+				return true;
+			else
+				return false;
+		}
+		
+		return false;
+	}
 	
   // MainClass m;
   // ClassDeclList cl;
@@ -268,10 +283,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(LessThan n) {
-    if (!( n.e1.accept(this) instanceof IntegerType)){
+    if(!isInteger(n.e1.accept(this))){
         System.out.println("Non-integer operand for operator <, at line 0, character 0");   
 	}
-    if(! (n.e2.accept(this) instanceof IntegerType)){
+    if(!isInteger(n.e1.accept(this))){
         System.out.println("Non-integer operand for operator <, at line 0, character 0");   
     }
 	
@@ -280,10 +295,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Plus n) {
-	if (!(n.e1.accept(this) instanceof IntegerType)){
+	if (!isInteger(n.e1.accept(this))){
         System.out.println("Non-integer operand for operator +, at line 0, character 0");   
     }
-    if(! (n.e2.accept(this) instanceof IntegerType)){
+    if(!isInteger(n.e2.accept(this))){
         System.out.println("Non-integer operand for operator +, at line 0, character 0");   
     }
 	
@@ -292,10 +307,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Minus n) {
-	if (!( n.e1.accept(this) instanceof IntegerType)){
+	if (!isInteger(n.e1.accept(this))){
 		System.out.println("Non-integer operand for operator -, at line 0, character 0");	
 	}
-	if(! (n.e2.accept(this) instanceof IntegerType)){
+	if(!isInteger(n.e2.accept(this))){
 		System.out.println("Non-integer operand for operator -, at line 0, character 0");   
 	}
 	return new IntegerType();
@@ -303,11 +318,11 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Times n) {
-	if (!( n.e1.accept(this) instanceof IntegerType)){
+	if (!isInteger(n.e1.accept(this))){
        System.out.println("Non-integer operand for operator *, at line 0, character 0");   
     }
 		
-    if(! (n.e2.accept(this) instanceof IntegerType)){
+    if(!isInteger(n.e2.accept(this))){
         System.out.println("Non-integer operand for operator *, at line 0, character 0");   
     }
 		
