@@ -85,6 +85,19 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 		
 		return true;
 	}
+
+        public MethodSymbolTable getMethod(String name){
+            if(isMethod(name)){
+                return (MethodSymbolTable)methods.get(name);
+            }
+            else{
+                return null;
+            }
+        }
+        
+        public boolean isMethod(String name){
+            return methods.containsKey(name);
+        }
 	
 	public void print(int indentLevel)
 	{

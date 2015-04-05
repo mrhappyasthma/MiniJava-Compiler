@@ -36,6 +36,19 @@ public class SymbolTable implements Scope
 	{
 		return null;
 	}
+
+	public ClassSymbolTable getClass(String name){
+            if(isClass(name)){
+                return (ClassSymbolTable)classes.get(name);
+            }
+            else{
+                return null;
+            }
+        }
+	
+	public boolean isClass(String name){
+            return classes.containsKey(name);
+        }
 	
 	public Variable lookupVariable(String name)
 	{
