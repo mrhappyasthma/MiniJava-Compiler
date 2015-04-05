@@ -253,7 +253,8 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Statement s1,s2;
   public Type visit(If n) {
     if(!isBoolean(n.e.accept(this))){
-		System.out.println("Non-boolean expression used as the condition of if statement at line 0, character 0");
+		System.out.println("Non-boolean expression used as the condition of if statement at line " + n.lineNum + ", character " + n.charNum);
+		errorDetected = true;
 	}
 	
     n.s1.accept(this);
@@ -267,7 +268,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
   public Type visit(While n) {
 	if(!isBoolean(n.e.accept(this))){
         errorDetected=true;
-		System.out.println("Non-boolean expression used as the condition of while statement at line 0, character 0");
+		System.out.println("Non-boolean expression used as the condition of while statement at line " + n.lineNum + ", character " + n.charNum);
     }
     	
 	n.s.accept(this);

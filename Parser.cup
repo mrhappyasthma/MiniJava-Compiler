@@ -190,11 +190,11 @@ typeChain ::= COMMA type:t identifier:id typeChain:tc
 statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
 			  {: RESULT = new Block(sc); :}
 			  |
-			  IF LEFTPAREN expression:e1 RIGHTPAREN statement:s1 ELSE statement:s2
-			  {: RESULT = new If(e1, s1, s2); :}
+			  IF LEFTPAREN:l expression:e1 RIGHTPAREN statement:s1 ELSE statement:s2
+			  {: RESULT = new If(e1, s1, s2, l.getLine(), l.getCol()); :}
 			  |
-			  WHILE LEFTPAREN expression:e1 RIGHTPAREN statement:s
-			  {: RESULT = new While(e1, s); :}
+			  WHILE LEFTPAREN:l expression:e1 RIGHTPAREN statement:s
+			  {: RESULT = new While(e1, s, l.getLine(), l.getCol()); :}
 			  |
 			  PRINTLN LEFTPAREN expression:e1 RIGHTPAREN SEMICOLON
 			  {: RESULT = new Print(e1); :}

@@ -4,10 +4,14 @@ import visitor.TypeVisitor;
 
 public class If extends Statement {
   public Exp e;
-  public Statement s1,s2;
+  public Statement s1,s2;  
+  public int lineNum;
+  public int charNum;
 
-  public If(Exp ae, Statement as1, Statement as2) {
+  public If(Exp ae, Statement as1, Statement as2, int lineNum, int charNum) {
     e=ae; s1=as1; s2=as2;
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) {
