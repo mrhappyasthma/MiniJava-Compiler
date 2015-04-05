@@ -463,6 +463,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	ClassSymbolTable cst = symTable.getClass(className);
 	
 	if(!(cst.isMethod(methName))){
+		errorDetected = true;
 		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
 	}
 	
@@ -471,8 +472,25 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	n.e.accept(this);
     n.i.accept(this);
 	
+	if(!(cst.getMethod(methName).numParameters() == (n.el.size()+1))){
+		errorDetected = true;
+		System.out.println("Call of method " + methName + " does not match its declared number of arguments at line " + n.lineNum + ", character " + n.charNum);
+	}
+	
+	Object[] params = cst.getMethod(methName).getParameters();
+	
     for ( int i = 0; i < n.el.size(); i++ ) {
-        n.el.elementAt(i).accept(this);
+        Type t = n.el.elementAt(i).accept(this);
+		
+		if(!errorDetected){
+			Variable v = (Variable) params[i+1];
+			
+			if(!compareTypes(t, strToType(v.getType()))){
+				errorDetected = true;
+				System.out.println("Call of method " + methName + " does not match its declared signature at line " + n.lineNum + ", character " + n.charNum);
+				break;
+			}
+		}
     }
 	
 	if(returnType.equals("void"))
@@ -521,6 +539,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Exp e;
   public Type visit(Not n) {
 	if(!isBoolean(n.e.accept(this))){
+		errorDetected = true;
 		System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
     }
 

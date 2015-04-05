@@ -15,10 +15,14 @@ public class Call extends Exp
   public Identifier i;
   public ExpList el;
   public Variable t;
+  public int lineNum;
+  public int charNum;
   
-  public Call(Exp ae, Identifier ai, ExpList ael) 
+  public Call(Exp ae, Identifier ai, ExpList ael, int lineNum, int charNum) 
   {
     e=ae; i=ai; el=ael;
+	this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) 

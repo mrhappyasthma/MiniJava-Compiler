@@ -202,8 +202,8 @@ statement ::= LEFTCURLY statementChain:sc RIGHTCURLY
 			  identifier:id ASSIGNMENT:a expression:e1 SEMICOLON
 			  {: RESULT = new Assign(id, e1, a.getLine(), a.getCol()); :}
 			  |
-			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT expression:e2 SEMICOLON
-			  {: RESULT = new ArrayAssign(id, e1, e2); :}
+			  identifier:id LEFTBRACKET expression:e1 RIGHTBRACKET ASSIGNMENT:a expression:e2 SEMICOLON
+			  {: RESULT = new ArrayAssign(id, e1, e2, a.getLine(), a.getCol()); :}
 			  |
 			  error SEMICOLON
 			  ;
@@ -241,13 +241,13 @@ expression ::= expression:e1 AND expression:e2
 			   expression:e1 PERIOD LENGTH
 			   {: RESULT = new ArrayLength(e1); :}
 			   |
-			   expression:e1 PERIOD identifier:id LEFTPAREN RIGHTPAREN
+			   expression:e1 PERIOD:p identifier:id LEFTPAREN RIGHTPAREN
 			   {:
 					ExpList ec = new ExpList();
-					RESULT = new Call(e1, id, ec); 
+					RESULT = new Call(e1, id, ec, p.getLine(), p.getCol()); 
 				:}
 			   |
-			   expression:e1 PERIOD identifier:id LEFTPAREN expression:e2 expressionChain:ec RIGHTPAREN
+			   expression:e1 PERIOD:p identifier:id LEFTPAREN expression:e2 expressionChain:ec RIGHTPAREN
 			   {: 
 					//Create a new list and add "e2" as the first argument.  Then add any from the expressionChain
 					ExpList list = new ExpList();
@@ -258,7 +258,7 @@ expression ::= expression:e1 AND expression:e2
 						list.addElement(ec.elementAt(i));
 					}
 					
-					RESULT = new Call(e1, id, list); 
+					RESULT = new Call(e1, id, list, p.getLine(), p.getCol()); 
 			   :}
 			   |
 			   INTEGER:i
