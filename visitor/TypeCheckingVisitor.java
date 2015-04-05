@@ -3,18 +3,18 @@ package visitor;
 import syntaxtree.*;
 import symboltable.*;
 
-public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
+public class TypeCheckingVisitor implements TypeVisitor {
 	private Scope currentScope;
 	private ClassSymbolTable currClass;
-        private MethodSymbolTable currMethod;
-        private SymbolTable symTable;
-        public boolean errorDetected;
+    private MethodSymbolTable currMethod;
+    private SymbolTable symTable;
+    public boolean errorDetected;
 	private int blockNumber;
 	
 	public TypeCheckingVisitor(Scope s){
 		currentScope = s; 
 		errorDetected = false;
-                symTable = (SymbolTable)currentScope;
+        symTable = (SymbolTable)currentScope;
 		blockNumber=0;
 	}
 	//create numbers (as strings) for the blocks
@@ -22,43 +22,42 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
 		blockNumber++;
 		return ("" + blockNumber);
 	}
+	
 	public boolean compareTypes(Type t1, Type t2){
 		if(t1 instanceof IntegerType && t2 instanceof IntegerType){
 			return true;
 		}	
-		if(t1 instanceof BooleanType && t2 instanceof BooleanType){
-                        return true;
-                }
-		if(t1 instanceof IntArrayType && t2 instanceof IntArrayType){
-                        return true;
-                }
-		if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
-                        return true;
-                }
+		else if(t1 instanceof BooleanType && t2 instanceof BooleanType){
+            return true;
+        }
+		else if(t1 instanceof IntArrayType && t2 instanceof IntArrayType){
+            return true;
+        }
+		else if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
+			if(((IdentifierType)t1).s.equals(((IdentifierType)t2).s))
+				return true;
+			else
+				return false;
+        }
 		
 		return false;
 
 	}
 
-	//Helper function to turn Type into String containing the type:  i.e. "int", "boolean", etc.
-	public String getTypeStr(Type t){
-		String type;
-		
-		if(t instanceof IntegerType){
-			type = "int";
+	//Helper function to turn Strings (i.e. "int", "boolean", etc.) into Type
+	public Type strToType(String str){
+		if(str.equals("int")){
+			return new IntegerType();
 		}
-		else if(t instanceof IntArrayType){
-			type = "int[]";
+		else if(str.equals("int[]")){
+			return new IntArrayType();
 		}
-		else if(t instanceof BooleanType){
-			type = "boolean";
+		else if(str.equals("boolean")){
+			return new BooleanType();
 		}
 		else{
-			IdentifierType t1 = (IdentifierType)t;
-			type = t1.s;
+			return new IdentifierType(str);
 		}
-		
-		return type;
 	}
 
 	
@@ -77,13 +76,13 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
   public Type visit(MainClass n) {
         
 	currentScope = currentScope.enterScope(n.i1.toString()); //Enter class
-        currClass = (ClassSymbolTable) currentScope;
-        currentScope = currentScope.enterScope("main");
-        currMethod = (MethodSymbolTable)currentScope;
+    currClass = (ClassSymbolTable) currentScope;
+    currentScope = currentScope.enterScope("main");
+    currMethod = (MethodSymbolTable)currentScope;
 		
 	n.i1.accept(this);
-    	n.i2.accept(this);
-    	n.s.accept(this);
+	n.i2.accept(this);
+    n.s.accept(this);
 
 	currentScope = currentScope.exitScope(); //Exit "main" method
 	currentScope = currentScope.exitScope(); //Exit class
@@ -114,7 +113,7 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
   // MethodDeclList ml;
   public Type visit(ClassDeclExtends n) {
     	currentScope = currentScope.enterScope(n.i.toString()); //Enter class
-	currClass = (ClassSymbolTable) currentScope;	
+		currClass = (ClassSymbolTable) currentScope;	
     	n.i.accept(this);
     	n.j.accept(this);
     	for ( int i = 0; i < n.vl.size(); i++ ) {
@@ -259,37 +258,36 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
 	return null;
   }
 
-// Exp e1,e2;
+  // Exp e1,e2;
   public Type visit(And n) {
-	if(!(n.e1.accept(this) instanceof BooleanType) || !(n.e2.accept(this) instanceof BooleanType )){
+    if(!(n.e1.accept(this) instanceof BooleanType) || !(n.e2.accept(this) instanceof BooleanType )){
 		System.out.println("Attempt to use boolean operator && on non-boolean operands at line 0, character 0");
 	}
-    	return new BooleanType();
-  }
+    return new BooleanType();
+   }
 
   // Exp e1,e2;
   public Type visit(LessThan n) {
-        if (!( n.e1.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator <, at line 0, character 0");   
-        }
-        if(! (n.e2.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator <, at line 0, character 0");   
-        }
+    if (!( n.e1.accept(this) instanceof IntegerType)){
+        System.out.println("Non-integer operand for operator <, at line 0, character 0");   
+	}
+    if(! (n.e2.accept(this) instanceof IntegerType)){
+        System.out.println("Non-integer operand for operator <, at line 0, character 0");   
+    }
+	
 	return new BooleanType();
-
-   
   }
 
   // Exp e1,e2;
   public Type visit(Plus n) {
 	if (!(n.e1.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator +, at line 0, character 0");   
-        }
-        if(! (n.e2.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator +, at line 0, character 0");   
-        }
+        System.out.println("Non-integer operand for operator +, at line 0, character 0");   
+    }
+    if(! (n.e2.accept(this) instanceof IntegerType)){
+        System.out.println("Non-integer operand for operator +, at line 0, character 0");   
+    }
+	
 	return new IntegerType();
-
   }
 
   // Exp e1,e2;
@@ -306,14 +304,14 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
   // Exp e1,e2;
   public Type visit(Times n) {
 	if (!( n.e1.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator *, at line 0, character 0");   
-        }
-        if(! (n.e2.accept(this) instanceof IntegerType)){
-                System.out.println("Non-integer operand for operator *, at line 0, character 0");   
-        }
+       System.out.println("Non-integer operand for operator *, at line 0, character 0");   
+    }
+		
+    if(! (n.e2.accept(this) instanceof IntegerType)){
+        System.out.println("Non-integer operand for operator *, at line 0, character 0");   
+    }
+		
 	return new IntegerType();
-
-   
   }
 
   // Exp e1,e2;
@@ -328,6 +326,7 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
 	if(!(n.e.accept(this) instanceof IntArrayType)){
 		System.out.println("Length property only applies to arrays line 0, character 0");
 	}
+	
 	return new IntegerType();  
   }
 
@@ -336,18 +335,31 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
   // ExpList el;
   public Type visit(Call n) {
 	//call something that isn't a method
-    	String methName = n.i.s;
+    String methName = n.i.s;
 	String className = ((IdentifierType) n.e.accept(this)).s;
 	ClassSymbolTable cst = symTable.getClass(className);
+	
 	if(!(cst.isMethod(methName))){
 		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
 	}
+	
+	String returnType = cst.getMethod(methName).getReturnType();
+	
 	n.e.accept(this);
-    	n.i.accept(this);
-    	for ( int i = 0; i < n.el.size(); i++ ) {
-        	n.el.elementAt(i).accept(this);
-    	}
-  	return null;	
+    n.i.accept(this);
+	
+    for ( int i = 0; i < n.el.size(); i++ ) {
+        n.el.elementAt(i).accept(this);
+    }
+	
+	if(returnType.equals("void"))
+	{
+		return new VoidType();
+	}
+	else
+	{
+		return strToType(returnType);
+	}
   }
 
   // int i;
@@ -365,14 +377,11 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
 
   // String s;
   public Type visit(IdentifierExp n) {
-	//???? NOT SURE IF IT IS WHAT I NEED
 	return new IdentifierType(n.s);
   }
 
   public Type visit(This n) {
-	//currClass == main class?
-	//return currClass type
-	return null;
+	return new IdentifierType(currClass.getName());
   }
 
   // Exp e;
@@ -384,20 +393,20 @@ public class TypeCheckingVisitor extends TypeDepthFirstVisitor {
   // Identifier i;
   public Type visit(NewObject n) {
 	return new IdentifierType(n.i.s);
-}
+  }
 
   // Exp e;
   public Type visit(Not n) {
 	if(!(n.e.accept(this) instanceof BooleanType )){
-                System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
-        }
-        return new BooleanType();
+		System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
+    }
+
+    return new BooleanType();
   }
 
   // String s;
   public Type visit(Identifier n) {
 	return new IdentifierType(n.s);	
   }
-
 }
 
