@@ -32,6 +32,10 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 	{
 		return args.values().toArray();
 	}
+
+	public int numParameters(){
+            return getParameters().length;
+        }
 	
 	public String getReturnType()
 	{
