@@ -593,9 +593,15 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Identifier i;
   // ExpList el;
   public Type visit(Call n) {
-	//call something that isn't a method
-    	String methName = n.i.s;
-	String className = ((IdentifierType) n.e.accept(this)).s;
+    String methName = n.i.s;
+	String varName = ((IdentifierType) n.e.accept(this)).s;
+	Variable callee = currentScope.lookupVariable(varName);
+	String className;
+	if(callee == null)
+		className = varName;
+	else
+		className = callee.getType();
+
 	ClassSymbolTable cst = symTable.getClass(className);
 	
 	if(!(cst.isMethod(methName))){
@@ -689,10 +695,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e;
   public Type visit(Not n) {
-	if(!isBoolean(n.e.accept(this))){
-		errorDetected = true;
-		System.out.println("Attempt to use boolean operator ! on non-boolean operand at line 0, character 0");
-    }
+	//if(!isBoolean(n.e.accept(this))){
+	//	errorDetected = true;
+	//	System.out.println("Attempt to use boolean operator ! on non-boolean operand at line " + n.lineNum + ", character " + n.charNum);
+    //}
 
     return new BooleanType();
   }

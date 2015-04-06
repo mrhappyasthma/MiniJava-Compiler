@@ -13,10 +13,14 @@ public class Not extends Exp
 {
   public Exp e;
   public Variable t;
+  public int lineNum;
+  public int charNum;
   
-  public Not(Exp ae) 
+  public Not(Exp ae, int lineNum, int charNum) 
   {
-    e=ae; 
+    e=ae;
+    this.lineNum = lineNum;
+	this.charNum = charNum;
   }
 
   public void accept(Visitor v) 

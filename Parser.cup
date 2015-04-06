@@ -285,8 +285,8 @@ expression ::= expression:e1 AND:a expression:e2
 			   NEW identifier:id LEFTPAREN RIGHTPAREN
 			   {: RESULT = new NewObject(id); :}
 			   |
-			   EXCLAMATION expression:e1
-			   {: RESULT = new Not(e1); :}
+			   EXCLAMATION:e expression:e1
+			   {: RESULT = new Not(e1, e.getLine(), e.getCol()); :}
 			   |
 			   LEFTPAREN expression:e1 RIGHTPAREN
 			   {: RESULT = e1; :};
