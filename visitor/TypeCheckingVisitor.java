@@ -6,7 +6,7 @@ import symboltable.*;
 public class TypeCheckingVisitor implements TypeVisitor {
 	private Scope currentScope;
 	private ClassSymbolTable currClass;
-    private MethodSymbolTable currMethod;
+	private MethodSymbolTable currMethod;
     private SymbolTable symTable;
     public boolean errorDetected;
 	private int blockNumber;
@@ -389,7 +389,30 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(LessThan n) {
-    if(!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+
+        Type t1 = n.e1.accept(this);
+        Type t2 = n.e2.accept(this);
+
+        if(t1 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t1;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+        if(t2 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t2;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+
+    	if(!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
 		errorDetected = true;
         System.out.println("Non-integer operand for operator <, at line " + n.lineNum + ", character " + n.charNum);   
 	}
@@ -399,6 +422,28 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Plus n) {
+
+	Type t1 = n.e1.accept(this); 
+	Type t2 = n.e2.accept(this);
+
+	if(t1 instanceof IdentifierType){
+		IdentifierType id = (IdentifierType) t1;
+		
+		if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			errorDetected = true;
+			System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+		}
+	}	
+
+	if(t2 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t2;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
 	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
 		errorDetected = true;
         System.out.println("Non-integer operand for operator +, at line " + n.lineNum + ", character " + n.charNum);   
@@ -409,6 +454,30 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Minus n) {
+
+        Type t1 = n.e1.accept(this);
+        Type t2 = n.e2.accept(this);
+
+        if(t1 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t1;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+        if(t2 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t2;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+
+
 	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
 		errorDetected = true;
 		System.out.println("Non-integer operand for operator -, at line " + n.lineNum + ", character " + n.charNum);	
@@ -419,6 +488,31 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Times n) {
+
+        Type t1 = n.e1.accept(this);
+        Type t2 = n.e2.accept(this);
+
+        if(t1 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t1;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+        if(t2 instanceof IdentifierType){
+                IdentifierType id = (IdentifierType) t2;
+
+                if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+                        errorDetected = true;
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                }
+        }
+
+
+
+
 	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
 		errorDetected = true;
         System.out.println("Non-integer operand for operator *, at line " + n.lineNum + ", character " + n.charNum);    
@@ -429,9 +523,9 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(ArrayLookup n) {
-    n.e1.accept(this);
-    n.e2.accept(this);
-    return new IntegerType();
+	n.e1.accept(this);
+    	n.e2.accept(this);
+    	return new IntegerType();
   }
 
   // Exp e;
@@ -449,7 +543,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // ExpList el;
   public Type visit(Call n) {
 	//call something that isn't a method
-    String methName = n.i.s;
+    	String methName = n.i.s;
 	String className = ((IdentifierType) n.e.accept(this)).s;
 	ClassSymbolTable cst = symTable.getClass(className);
 	
