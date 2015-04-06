@@ -401,7 +401,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
                         errorDetected = true;
-                        System.out.println("Invalid operands for < operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for < operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
@@ -411,7 +411,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
                         invalidOperands = true;
 			errorDetected = true;
-                        System.out.println("Invalid operands for < operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for < operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
@@ -438,7 +438,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
 			errorDetected = true;
-			System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+			System.out.println("Invalid operands for + operator, at line "+n.lineNum+", character"+n.charNum);
 		}
 	}	
 
@@ -448,7 +448,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
                         errorDetected = true;
-                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for + operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 	if(!invalidOperands){
@@ -475,7 +475,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
                         invalidOperands = true;
 			errorDetected = true;
-                        System.out.println("Invalid operands for - operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for - operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
@@ -485,7 +485,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
                         errorDetected = true;
-                        System.out.println("Invalid operands for - operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for - operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
@@ -514,7 +514,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
                         errorDetected = true;
-                        System.out.println("Invalid operands for * operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for * operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
@@ -524,7 +524,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
 			invalidOperands = true;
                         errorDetected = true;
-                        System.out.println("Invalid operands for * operator, at line "+n.lineNum+" ,character"+n.charNum);
+                        System.out.println("Invalid operands for * operator, at line "+n.lineNum+", character"+n.charNum);
                 }
         }
 
