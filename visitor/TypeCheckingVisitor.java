@@ -285,19 +285,23 @@ public class TypeCheckingVisitor implements TypeVisitor {
   // Identifier i;
   // Exp e;
   public Type visit(Assign n) {
-    	n.i.accept(this);
+    n.i.accept(this);
+	boolean internalError = false;
 	
 	//Check for invalid l-values
 	if(n.i.s.equals("this")){
+		internalError = true;
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else if(symTable.isClass(n.i.s)){
+		internalError = true;
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else{
 		if(currClass.isMethod(n.i.s)){
+			internalError = true;
 			errorDetected=true;
 			System.out.println("Invalid l-value: "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 		}		
@@ -310,11 +314,13 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		IdentifierType id = (IdentifierType) t;
 		
 		if(symTable.isClass(id.s)){
+			internalError = true;
 			errorDetected = true;
 			System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
 		}
 		else{
 			if(currClass.isMethod(id.s)){
+				internalError = true;
 				errorDetected = true;
 				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
 			}
@@ -322,7 +328,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	}
 	
 	//Check for type mismatch
-	if(!compareTypes(strToType(n.i.s), t) && !errorDetected){
+	if(!compareTypes(strToType(n.i.s), t) && !internalError){
 		errorDetected = true;
 		System.out.println("Type mismatch during assignment at line " + n.lineNum + ", character " + n.charNum);
 	}
@@ -335,18 +341,22 @@ public class TypeCheckingVisitor implements TypeVisitor {
     n.i.accept(this);
     n.e1.accept(this);
     Type t = n.e2.accept(this);
+	boolean internalError = false;
 	
 	//Check for invalid l-values
 	if(n.i.s.equals("this")){
+		internalError = true;
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a this, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else if(symTable.isClass(n.i.s)){
+		internalError = true;
 		errorDetected=true;
 		System.out.println("Invalid l-value: "+n.i.s+" is a class, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 	}
 	else{
 		if(currClass.isMethod(n.i.s)){
+			internalError = true;
 			errorDetected=true;
 			System.out.println("Invalid l-value: "+n.i.s+" is a method, at line "+ n.i.lineNum+", character "+ n.i.charNum);
 		}		
@@ -357,11 +367,13 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		IdentifierType id = (IdentifierType) t;
 		
 		if(symTable.isClass(id.s)){
+			internalError = true;
 			errorDetected = true;
 			System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
 		}
 		else{
 			if(currClass.isMethod(id.s)){
+				internalError = true;
 				errorDetected = true;
 				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
 			}
@@ -369,7 +381,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	}
 	
 	//Check for type mismatch
-	if(!compareTypes(new IntegerType(), t) && !errorDetected){
+	if(!compareTypes(new IntegerType(), t) && !internalError){
 		errorDetected = true;
 		System.out.println("Type mismatch during assignment at line " + n.lineNum + ", character " + n.charNum);
 	}
@@ -581,7 +593,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	n.e.accept(this);
     n.i.accept(this);
 	
+	boolean numParamError = false;
+	
 	if(!(cst.getMethod(methName).numParameters() == (n.el.size()+1))){
+		numParamError = true;
 		errorDetected = true;
 		System.out.println("Call of method " + methName + " does not match its declared number of arguments at line " + n.lineNum + ", character " + n.charNum);
 	}
@@ -591,7 +606,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
     for ( int i = 0; i < n.el.size(); i++ ) {
         Type t = n.el.elementAt(i).accept(this);
 		
-		if(!errorDetected){
+		if(!numParamError){
 			Variable v = (Variable) params[i+1];
 			
 			if(!compareTypes(t, strToType(v.getType()))){
