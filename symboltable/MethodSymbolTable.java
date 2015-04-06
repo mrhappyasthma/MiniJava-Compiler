@@ -30,7 +30,22 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 	
 	public Object[] getParameters()
 	{
-		return args.values().toArray();
+		Object[] params = args.values().toArray();
+		Object[] temp = new Object[params.length-1];
+		System.arraycopy(params, 1, temp, 0, temp.length);
+		reverse(temp);
+		System.arraycopy(temp, 0, params, 1, temp.length);
+		return params;
+	}
+	
+	private static void reverse(Object[] arr)
+	{
+		for(int i = 0; i < arr.length / 2; i++)
+		{
+			Object temp = arr[i];
+			arr[i] = arr[arr.length - i - 1];
+			arr[arr.length - i - 1 ] = temp;
+		}
 	}
 
 	public int numParameters(){

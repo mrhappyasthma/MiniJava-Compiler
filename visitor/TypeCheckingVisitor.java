@@ -36,10 +36,37 @@ public class TypeCheckingVisitor implements TypeVisitor {
         }
 		else if(t1 instanceof IdentifierType || t2 instanceof IdentifierType){
 			if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
-				if(((IdentifierType)t1).s.equals(((IdentifierType)t2).s))
-					return true;
+				Variable v = currentScope.lookupVariable(((IdentifierType)t1).s);
+				Variable v2 = currentScope.lookupVariable(((IdentifierType)t2).s);
+				String s1;
+				String s2;
+				
+				if(v == null)
+					s1 = ((IdentifierType)t1).s;
 				else
-					return false;
+					s1 = v.getType();
+				
+				if(v2 == null)
+					s2 = ((IdentifierType)t2).s;
+				else
+					s2 = v2.getType();
+				
+				if(s1.equals(s2))
+					return true;
+				else{
+					if(symTable.isClass(s1))
+						if(((ClassSymbolTable)symTable.enterScope(s1)).getParentClass() != null)
+							s1 = ((ClassSymbolTable)symTable.enterScope(s1)).getParentClass();
+					
+					if(symTable.isClass(s2))
+						if(((ClassSymbolTable)symTable.enterScope(s2)).getParentClass() != null)
+							s2 = ((ClassSymbolTable)symTable.enterScope(s2)).getParentClass();
+						
+					if(s1.equals(s2))
+						return true;
+					else
+						return false;
+				}
 			}
 			else if(t1 instanceof IdentifierType){
 				Variable v = currentScope.lookupVariable(((IdentifierType)t1).s);
@@ -333,18 +360,18 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	if(t instanceof IdentifierType){
 		IdentifierType id = (IdentifierType) t;
 		
-		if(symTable.isClass(id.s)){
-			internalError = true;
-			errorDetected = true;
-			System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
-		}
-		else{
+		//if(symTable.isClass(id.s)){
+		//	internalError = true;
+		//	errorDetected = true;
+		//	System.out.println("Invalid r-value: " + id.s + " is a class, at line " + n.lineNum + ", character " + n.charNum);
+		//}
+		//else{
 			if(currClass.isMethod(id.s)){
 				internalError = true;
 				errorDetected = true;
 				System.out.println("Invalid r-value: " + id.s + " is a method, at line " + n.lineNum + ", character " + n.charNum);
 			}
-		}
+		//}
 	}
 	
 	//Check for type mismatch
@@ -634,7 +661,7 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		
 		if(!numParamError){
 			Variable v = (Variable) params[i+1];
-			
+
 			if(!compareTypes(t, strToType(v.getType()))){
 				errorDetected = true;
 				System.out.println("Call of method " + methName + " does not match its declared signature at line " + n.lineNum + ", character " + n.charNum);
@@ -695,10 +722,10 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e;
   public Type visit(Not n) {
-	//if(!isBoolean(n.e.accept(this))){
-	//	errorDetected = true;
-	//	System.out.println("Attempt to use boolean operator ! on non-boolean operand at line " + n.lineNum + ", character " + n.charNum);
-    //}
+	if(!isBoolean(n.e.accept(this))){
+		errorDetected = true;
+		System.out.println("Attempt to use boolean operator ! on non-boolean operand at line " + n.lineNum + ", character " + n.charNum);
+    }
 
     return new BooleanType();
   }
