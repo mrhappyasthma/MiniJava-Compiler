@@ -389,14 +389,17 @@ public class TypeCheckingVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(LessThan n) {
-
+	
         Type t1 = n.e1.accept(this);
         Type t2 = n.e2.accept(this);
+	
+	boolean invalidOperands = false;
 
         if(t1 instanceof IdentifierType){
                 IdentifierType id = (IdentifierType) t1;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
                         errorDetected = true;
                         System.out.println("Invalid operands for < operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
@@ -406,30 +409,34 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 IdentifierType id = (IdentifierType) t2;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
-                        errorDetected = true;
+                        invalidOperands = true;
+			errorDetected = true;
                         System.out.println("Invalid operands for < operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
         }
 
-
-    	if(!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
-		errorDetected = true;
-        System.out.println("Non-integer operand for operator <, at line " + n.lineNum + ", character " + n.charNum);   
+	if(!invalidOperands){
+    		if(!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+			errorDetected = true;
+        	System.out.println("Non-integer operand for operator <, at line " + n.lineNum + ", character " + n.charNum);   
+		}
 	}
-	
 	return new BooleanType();
   }
 
   // Exp e1,e2;
   public Type visit(Plus n) {
-
+	
 	Type t1 = n.e1.accept(this); 
 	Type t2 = n.e2.accept(this);
+	
+	boolean invalidOperands = false;	
 
 	if(t1 instanceof IdentifierType){
 		IdentifierType id = (IdentifierType) t1;
 		
 		if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
 			errorDetected = true;
 			System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
 		}
@@ -439,15 +446,17 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 IdentifierType id = (IdentifierType) t2;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
                         errorDetected = true;
                         System.out.println("Invalid operands for + operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
         }
-
-	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
-		errorDetected = true;
-        System.out.println("Non-integer operand for operator +, at line " + n.lineNum + ", character " + n.charNum);   
-    }
+	if(!invalidOperands){
+		if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+			errorDetected = true;
+       		 	System.out.println("Non-integer operand for operator +, at line " + n.lineNum + ", character " + n.charNum);   
+   		}
+	 }
 
 	return new IntegerType();
   }
@@ -458,11 +467,14 @@ public class TypeCheckingVisitor implements TypeVisitor {
         Type t1 = n.e1.accept(this);
         Type t2 = n.e2.accept(this);
 
+	boolean invalidOperands = false;
+
         if(t1 instanceof IdentifierType){
                 IdentifierType id = (IdentifierType) t1;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
-                        errorDetected = true;
+                        invalidOperands = true;
+			errorDetected = true;
                         System.out.println("Invalid operands for - operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
         }
@@ -471,16 +483,18 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 IdentifierType id = (IdentifierType) t2;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
                         errorDetected = true;
                         System.out.println("Invalid operands for - operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
         }
 
 
-
-	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
-		errorDetected = true;
-		System.out.println("Non-integer operand for operator -, at line " + n.lineNum + ", character " + n.charNum);	
+	if(!invalidOperands){
+		if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+			errorDetected = true;
+			System.out.println("Non-integer operand for operator -, at line " + n.lineNum + ", character " + n.charNum);	
+		}
 	}
 
 	return new IntegerType();
@@ -492,10 +506,13 @@ public class TypeCheckingVisitor implements TypeVisitor {
         Type t1 = n.e1.accept(this);
         Type t2 = n.e2.accept(this);
 
+	boolean invalidOperands = false;
+
         if(t1 instanceof IdentifierType){
                 IdentifierType id = (IdentifierType) t1;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
                         errorDetected = true;
                         System.out.println("Invalid operands for * operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
@@ -505,18 +522,20 @@ public class TypeCheckingVisitor implements TypeVisitor {
                 IdentifierType id = (IdentifierType) t2;
 
                 if(symTable.isClass(id.s) || currClass.isMethod(id.s)){
+			invalidOperands = true;
                         errorDetected = true;
                         System.out.println("Invalid operands for * operator, at line "+n.lineNum+" ,character"+n.charNum);
                 }
         }
 
 
-
-
-	if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
-		errorDetected = true;
-        System.out.println("Non-integer operand for operator *, at line " + n.lineNum + ", character " + n.charNum);    
-    }
+	
+	if(!invalidOperands){
+		if (!isInteger(n.e1.accept(this)) || !isInteger(n.e2.accept(this))){
+			errorDetected = true;
+        		System.out.println("Non-integer operand for operator *, at line " + n.lineNum + ", character " + n.charNum);       	
+   		  }
+	}
 		
 	return new IntegerType();
   }
