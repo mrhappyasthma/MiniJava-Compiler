@@ -34,11 +34,31 @@ public class TypeCheckingVisitor implements TypeVisitor {
 		else if(t1 instanceof IntArrayType && t2 instanceof IntArrayType){
             return true;
         }
-		else if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
-			if(((IdentifierType)t1).s.equals(((IdentifierType)t2).s))
-				return true;
-			else
-				return false;
+		else if(t1 instanceof IdentifierType || t2 instanceof IdentifierType){
+			if(t1 instanceof IdentifierType && t2 instanceof IdentifierType){
+				if(((IdentifierType)t1).s.equals(((IdentifierType)t2).s))
+					return true;
+				else
+					return false;
+			}
+			else if(t1 instanceof IdentifierType){
+				Variable v = currentScope.lookupVariable(((IdentifierType)t1).s);
+				if(v == null){
+					return true; //Assume undeclared variable is of right type
+				}else {	
+					Type t = strToType(((IdentifierType)t1).s);
+					return compareTypes(t, t2);
+				}
+			}
+			else{
+				Variable v = currentScope.lookupVariable(((IdentifierType)t2).s);
+				if(v == null){
+					return true; //Assume undeclared variable is of right type
+				}else{
+					Type t = strToType(((IdentifierType)t2).s);
+					return compareTypes(t1, t);
+				}
+			}
         }
 		
 		return false;
