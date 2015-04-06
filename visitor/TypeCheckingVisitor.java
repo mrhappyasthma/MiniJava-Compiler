@@ -518,7 +518,14 @@ public class TypeCheckingVisitor implements TypeVisitor {
   }
 
   public Type visit(This n) {
-	return new IdentifierType(currClass.getName());
+	if(currMethod.getName().equals("main"))
+	{
+		errorDetected = true;
+		System.out.println("Illegal use of keyword 'this' in static method at line " + n.lineNum + ", character " + n.charNum);
+		return new VoidType();
+	}
+	else
+		return new IdentifierType(currClass.getName());
   }
 
   // Exp e;

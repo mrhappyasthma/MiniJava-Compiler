@@ -276,8 +276,8 @@ expression ::= expression:e1 AND:a expression:e2
 			   identifier:id
 			   {: RESULT = new IdentifierExp(id.toString(), id.lineNum, id.charNum); :}
 			   |
-			   THIS
-			   {: RESULT = new This(); :}
+			   THIS:t
+			   {: RESULT = new This(t.getLine(), t.getCol()); :}
 			   |
 			   NEW INT LEFTBRACKET expression:e1 RIGHTBRACKET
 			   {: RESULT = new NewArray(e1); :}

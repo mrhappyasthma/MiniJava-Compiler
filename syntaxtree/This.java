@@ -12,6 +12,14 @@ import symboltable.Variable;
 public class This extends Exp 
 {
   public Variable t;
+  public int lineNum;
+  public int charNum;
+
+  public This(int lineNum, int charNum)
+  {
+	this.lineNum = lineNum;
+	this.charNum = charNum;
+  }
 	
   public void accept(Visitor v) 
   {
