@@ -53,7 +53,9 @@ precedence left AND;
 precedence left LESSTHAN;
 precedence left PLUS, MINUS;
 precedence left STAR;
+precedence right NEW;
 precedence right EXCLAMATION;
+precedence left PERIOD;
 
 /* Start Symbol */
 start with program;
