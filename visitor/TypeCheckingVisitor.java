@@ -456,6 +456,11 @@ public class TypeCheckingVisitor implements TypeVisitor {
 	if(!(cst.isMethod(methName))){
 		errorDetected = true;
 		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
+		
+		n.e.accept(this);
+		n.i.accept(this);
+	
+		return new VoidType();
 	}
 	
 	String returnType = cst.getMethod(methName).getReturnType();
