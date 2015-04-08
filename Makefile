@@ -21,3 +21,5 @@ clear:
 	clear
 run:
 	java -cp ./tools/java-cup-11a.jar:. MiniJavaCompiler samples/$(file)
+runMars:
+	java -jar tools/Mars4_5.jar samples/$(file) 
