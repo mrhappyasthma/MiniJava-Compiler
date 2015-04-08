@@ -13,4 +13,24 @@ public abstract class Quadruple
 	protected Object result;
 	
 	public abstract String toString();
+	
+	public Object getOp()
+	{
+		return op;
+	}
+	
+	public Object getArg1()
+	{
+		return arg1;
+	}
+	
+	public Object getArg2()
+	{
+		return arg2;
+	}
+	
+	public Object getResult()
+	{
+		return result;
+	}
 }
