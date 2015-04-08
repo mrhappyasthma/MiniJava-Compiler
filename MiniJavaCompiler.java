@@ -101,27 +101,10 @@ public class MiniJavaCompiler
 					
 					//Create output file
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
-					FileWriter fw = null;
-					BufferedWriter bw = null;
-					
-					try
-					{
-						fw = new FileWriter(fileName);
-						bw = new BufferedWriter(fw);
 						
-						//Write MIPS
-						
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-					
-					//Close output file resources
-					if(fw != null)
-						fw.close();
-					if(bw != null)
-						bw.close();
+					//Write MIPS
+					CodeGenerator gen = new CodeGenerator(IRList, fileName);
+					gen.generateMIPS();
 					
 					//Link runtime.asm file
 					Linker linker = new Linker("linker/runtime.asm", fileName);
