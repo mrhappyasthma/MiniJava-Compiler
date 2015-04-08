@@ -15,6 +15,8 @@ clean:
 	rm -rf IR/*.class
 	rm -rf linker/*.class
 	rm -rf codegen/*.class
+cleanOutput:
+	rm -rf samples/*.asm
 clear:
 	clear
 run:
