@@ -19,11 +19,13 @@ public class IRVisitor implements Visitor
 	private int blockNumber;
 	private List<Quadruple> IRList; 
 	private Hashtable<Quadruple, List<Label>> labels;
+	private List<Variable> varList;
 	
 	public IRVisitor(Scope symbolTable)
 	{
 		labels = new Hashtable<Quadruple, List<Label>>();
 		IRList = new ArrayList<Quadruple>();
+		varList = new ArrayList<Variable>();
 		currentScope = symbolTable;
 		blockNumber = 0;
 	}
@@ -36,6 +38,11 @@ public class IRVisitor implements Visitor
 	public List<Quadruple> getIR()
 	{
 		return IRList;
+	}
+	
+	public List<Variable> getVars()
+	{
+		return varList;
 	}
 
 	//Helper function to add a new Label to a certain IR
@@ -281,6 +288,7 @@ public class IRVisitor implements Visitor
 	{
 		n.i.accept(this);
 		n.e.accept(this);
+		varList.add(currentScope.lookupVariable(n.i.toString()));
 		IRList.add(new CopyIR(n.e.generateTAC(), currentScope.lookupVariable(n.i.toString())));
 	}
 
@@ -291,6 +299,7 @@ public class IRVisitor implements Visitor
 		n.i.accept(this);
 		n.e1.accept(this);
 		n.e2.accept(this);
+		varList.add(currentScope.lookupVariable(n.i.toString()));
 		IRList.add(new IndexedAssignmentIR2(n.e2.generateTAC(), n.e1.generateTAC(), currentScope.lookupVariable(n.i.toString())));
 	}
 
