@@ -19,6 +19,20 @@ To run the compiler, generically, you could manually execute the following comma
 java -cp ./tools/java-cup-11a.jar:. MiniJavaCompiler MyMiniJavaFile.java
 ```
 
+### To Assemble Output:
+
+If you wish to assemble the output, you need to run it through the [Mars Simulator](http://courses.missouristate.edu/kenvollmar/mars/).  If you are on a linux environment, this can be ran easily using the Makefile (where "MyOutput.asm" is the file you wish to assemble/run and resides in the "samples" folder)::
+```
+make runMars file=MyOutput.asm
+```
+
+*Note:  If you are running using an SSH connection, you will need an X-Terminal server.  For windows, I recommend [Xming](http://www.arsc.edu/arsc/knowledge-base/using-xming-x-server-for-/index.xml).
+
+If you wish to run the assembler more generically, you can execute the following command (where "MyOutput.asm" is the file you wish to assemble and run):
+```
+java -jar tools/Mars4_5.jar MyOutput.asm
+```
+
 ### About the implementation:
 
 ##### Lexical Analysis
