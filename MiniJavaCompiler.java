@@ -10,6 +10,8 @@ import visitor.*;
 import symboltable.*;
 import IR.*;
 import helper.*;
+import linker.*;
+import codegen.*;
 import java.util.List;
 import java.util.Hashtable;
 
@@ -96,6 +98,34 @@ public class MiniJavaCompiler
 							}
 						}
 					}
+					
+					//Create output file
+					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
+					FileWriter fw = null;
+					BufferedWriter bw = null;
+					
+					try
+					{
+						fw = new FileWriter(fileName);
+						bw = new BufferedWriter(fw);
+						
+						//Write MIPS
+						
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					
+					//Close output file resources
+					if(fw != null)
+						fw.close();
+					if(bw != null)
+						bw.close();
+					
+					//Link runtime.asm file
+					Linker linker = new Linker("linker/runtime.asm", fileName);
+					linker.link();
 				}
 			}
 		}
