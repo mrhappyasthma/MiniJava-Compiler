@@ -14,22 +14,19 @@ import java.io.FileNotFoundException;
 
 public class Linker
 {
-	String inFile;
-	String outFile;
-	boolean errorDetected;
+	private String inFile;
+	private String outFile;
 	
 	public Linker()
 	{
 		inFile = null;
 		outFile = null;
-		errorDetected = false;
 	}
 	
 	public Linker(String input, String output)
 	{
 		inFile = input;
 		outFile = output;
-		errorDetected = false;
 	}
 	
 	public void link()
@@ -61,14 +58,10 @@ public class Linker
 			}
 			
 			//Close resources
-			if(fr != null)
-				fr.close();
 			if(br != null)
 				br.close();
 			if(bw != null)
 				bw.close();
-			if(fw != null)
-				fw.close();
 		}
 		catch(IOException e)
 		{
