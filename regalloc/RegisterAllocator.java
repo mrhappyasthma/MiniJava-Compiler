@@ -1,36 +1,37 @@
 package regalloc;
 
+import java.util.Hashtable;
+
 public class RegisterAllocator
 {
-	int[] temporaries;
-	int qtdTemp;
+        Hashtable<String, String> temporaries;
+        int qtdTemp;
 
-	public RegisterAllocator()
-	{
-		temporaries = new int[10];
-		qtdTemp = 0;
-	}
-	
-	public String allocateTemporaries(int num)
-	{
-		int i;
-		if(qtdTemp==10){
-			//System.out.println("");
-			//System.exit(0);
-			return null;
-		}
-		//verify if the value already exists
-		for(i=0; i<10; i++)
+        public RegisterAllocator()
+        {
+                temporaries = new Hashtable<String,String>();
+                qtdTemp = 0;
+        }
+
+        public String allocateRegister(String temporary)
+        {
+                int i;
+                if(qtdTemp==10){
+                        System.out.println("More than 9 values necessary!");
+                        System.exit(0);
+                }
+                //checks if temporary already exists
+                if(temporaries.containsKey(temporary))
 		{
-			if(temporaries[i]==num)
-			{
-					return("$t"+i);
-			}
-		}
-		temporaries[qtdTemp]=num;
-		int reg = qtdTemp;
-		qtdTemp++;
-		return("$t"+reg);
-		
-	}
+                    return temporaries.get(temporary);
+                }
+                else
+		{
+                    String regTemp = "$t"+qtdTemp;
+                    temporaries.put(temporary, regTemp);
+                    qtdTemp++;
+                    return regTemp;
+                }
+        }
 }
+
