@@ -11,6 +11,7 @@ import helper.Label;
 import symboltable.Variable;
 import java.util.List;
 import java.util.Hashtable;
+import regalloc.RegisterAllocator;
 
 public class CodeGenerator
 {
@@ -91,6 +92,9 @@ public class CodeGenerator
 			}
 		}
 	}
+	private void typeVar(String type){
+            
+        }
 	
 	private void functionCall(List<Quadruple>IRList, int index, BufferedWriter bw)
 	{
@@ -136,12 +140,95 @@ public class CodeGenerator
 			int paramIndex = index - paramCount;
 			
 			for(int i = 0; i < paramCount; i++)
-			{
-				ParameterIR param = (ParameterIR)IRList.get(paramIndex);
+			{	
 				String reg = "$a" + i;
+				RegisterAllocator regAll = new RegisterAllocator();
+				/*if(IRList.get(paramIndex) instanceof AssignmentIR)
+                                {
+                                    
+                                        AssignmentIR assign = (AssignmentIR) IRList.get(paramIndex);
+                                        if(((String)assign.getOp()).equals("+"))
+					{
+                                                String resName = ((Variable)assign.getResult()).getName();
+                                                String resType = ((Variable)assign.getResult()).getType();
+                                                String arg1Name = ((Variable)assign.getArg1()).getName();
+                                                String arg1Type = ((Variable)assign.getArg2()).getType();
+                                                String arg2Name = ((Variable)assign.getArg2()).getName();
+                                                String arg2Type = ((Variable)assign.getArg2()).getType();
+                                                if(resType.equals("temporary"))
+                                                {
+                                                    
+                                                        //need to check if args are temporary, constant or variable
+                                                        if(arg1Type.equals("temporary")) 
+                                                        {   
+                                                                temp = "add " + regAll.allocateRegister(resName) + ", $zero, " + regAll.allocateRegister(arg1Name) + "\n";
+                                                                
+                                                        }
+                                                        if(arg1Type.equals("constant")) 
+                                                        {   
+                                                                temp = "addi " + regAll.allocateRegister(resName) + ", $zero, " + arg1Name + "\n";
+                                                                
+                                                        }
+                                                        if(arg1Type.equals("variable")) 
+                                                        {   
+                                                                temp = "add " + regAll.allocateRegister(resName) + ", $zero, " + arg1Name + "\n";
+                                                                
+                                                        }
+                                                        bw.write(temp, 0, temp.length());
+                                                         if(arg2Type.equals("temporary")) 
+                                                        {   
+                                                                temp = "add " + regAll.allocateRegister(resName) + regAll.allocateRegister(arg1Name) + regAll.allocateRegister(arg1Name) + "\n";
+                                                                
+                                                        }
+                                                        if(arg1Type.equals("constant")) 
+                                                        {   
+                                                                temp = "addi " + regAll.allocateRegister(resName) +regAll.allocateRegister(arg1Name) + arg1Name + "\n";
+                                                                
+                                                        }
+                                                        if(arg1Type.equals("variable")) 
+                                                        {   
+                                                                temp = "add " + regAll.allocateRegister(resName) + regAll.allocateRegister(arg1Name) + arg1Name + "\n";
+                                                               
+                                                        }
+                                                        bw.write(temp, 0, temp.length());
+                                                        
+                                                }
+                                                else{
+						}
+
+
+                                        }
+                                        if(((String)assign.getOp()).equals("-")){
+
+                                        }
+                                        if(((String)assign.getOp()).equals("*")){
+
+                                        }
+                                }*/			
+	
+				ParameterIR param = (ParameterIR)IRList.get(paramIndex);
+
+				String arg1Type = ((Variable)param.getArg1()).getType();
+                                String arg1Name = ((Variable)param.getArg1()).getName();
 				
-				//What if it isn't just a constant?
-				temp = "addi " + reg + ", $zero, " + ((Variable)param.getArg1()).getName() + "\n"; 
+				
+				if(arg1Type.equals("constant")) 
+                                {              
+                                        temp = "addi " + reg + ", $zero, " + arg1Name + "\n"; 
+                                
+                                }
+                                if(arg1Type.equals("variable")) 
+                                {              
+                                        temp = "add " + reg + ", $zero, " + arg1Name + "\n"; 
+                                
+                                }
+                                if(arg1Type.equals("temporary")) 
+                                {              
+                                        temp = "add " + reg + ", $zero, " + regAll.allocateRegister(arg1Name) + "\n"; 
+                                
+                                }
+
+				
 				bw.write(temp, 0, temp.length());
 			}
 			
