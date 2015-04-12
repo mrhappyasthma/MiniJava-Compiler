@@ -45,9 +45,11 @@ public class RegisterAllocator
                 }
         }
 		
-		public String allocateTempReg()  //Allocate temporary register that won't be reserved for a temporary
+		public String allocateTempReg(int offset)  //Allocate temporary register that won't be reserved for a temporary
 		{
-			if(qtdTemp==18)
+			offset += qtdTemp;
+			
+			if(offset == 18)
 			{
                 System.out.println("ERROR - Out of registers");
                 System.exit(0);
@@ -55,13 +57,13 @@ public class RegisterAllocator
 			
 			String regTemp;
 					
-			if(qtdTemp < 10)
+			if(offset < 10)
 			{
 				regTemp = "$t"+qtdTemp;
 			}
 			else
 			{
-				regTemp = "$s"+(qtdTemp - 10);
+				regTemp = "$s"+(offset - 10);
 			}
 
             return regTemp;

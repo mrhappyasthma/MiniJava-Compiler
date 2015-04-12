@@ -143,7 +143,7 @@ public class CodeGenerator
 					}
 					else //Variable arg2
 					{
-						String tempReg = allocator.allocateTempReg();
+						String tempReg = allocator.allocateTempReg(0);
 						temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
 						bw.write(temp, 0, temp.length());
 						
@@ -154,8 +154,8 @@ public class CodeGenerator
 				}
 				else //Variable result
 				{
-					String resultReg = allocator.allocateTempReg();
-					String tempReg = allocator.allocateTempReg();
+					String resultReg = allocator.allocateTempReg(0);
+					String tempReg = allocator.allocateTempReg(1);
 					String resultName = (String)result.getName();
 					
 					//Handle arg1 -- Store the first parameter in the temporary register
