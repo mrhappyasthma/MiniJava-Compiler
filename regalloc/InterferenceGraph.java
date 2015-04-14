@@ -1,9 +1,15 @@
 /*package regalloc;
+import graph.Node;
+import graph.Graph;
 
-abstract public class InterferenceGraph extends Graph.Graph{
-	abstract public Graph.Node tnode(Temp.Temp temp);
+abstract public class InterferenceGraph extends Graph{
+	abstract public Node tnode(Temp.Temp temp);
 	abstract public Temp.Temp gtemp(Node node);
 	abstract public MoveList moves();
-	public int spillCost(Node node);
+	public int spillCost(Node node)
+        {
+            return 1;
+        }
 }
+
 */

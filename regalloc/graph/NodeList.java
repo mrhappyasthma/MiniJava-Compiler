@@ -1,11 +1,9 @@
-package graph;
-
-public class NodeList
-{
-	// head, tail ?
-	public NodeList(Node head, NodeList tail)
-	{
-
-	}	
-
+package Graph;
+public class NodeList {
+  public Node head;
+  public NodeList tail;
+  public NodeList(Node h, NodeList t) {head=h; tail=t;}
 }
+
+
+
