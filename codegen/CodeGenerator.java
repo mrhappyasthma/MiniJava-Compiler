@@ -402,11 +402,6 @@ public class CodeGenerator
 			//Jump to the function
 			String function = (String)instruction.getArg1();
 
-			if(function.equals("System.out.println") == true)
-			{
-				function = "_system_out_println";
-			}
-
 			temp = "jal " + function + "\n";
 			bw.write(temp, 0, temp.length());
 			

@@ -12,8 +12,10 @@ import IR.*;
 import helper.*;
 import linker.*;
 import codegen.*;
+import backpatching.*;
 import java.util.List;
 import java.util.Hashtable;
+import java.util.HashMap;
 
 public class MiniJavaCompiler
 {
@@ -73,6 +75,12 @@ public class MiniJavaCompiler
 					List<Quadruple> IRList = intermediateVisitor.getIR();
 					Hashtable<Quadruple, List<Label>> labels = intermediateVisitor.getLabels();
 					List<Variable> varList = intermediateVisitor.getVars();
+					HashMap<String, String> workList = intermediateVisitor.getWorkList();
+					
+					//Backpatch the IR to resolve labels in jumps to methods
+					BackPatcher backPatch = new BackPatcher(IRList, workList);
+					backPatch.patch();
+						
 					
 					//Print IR
 					for(int i = 0; i < IRList.size(); i++)

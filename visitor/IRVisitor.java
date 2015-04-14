@@ -8,6 +8,7 @@ package visitor;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.HashMap;
 import syntaxtree.*;
 import symboltable.*;
 import IR.*;
@@ -20,12 +21,14 @@ public class IRVisitor implements Visitor
 	private List<Quadruple> IRList; 
 	private Hashtable<Quadruple, List<Label>> labels;
 	private List<Variable> varList;
+	private HashMap<String, String> workList;
 	
 	public IRVisitor(Scope symbolTable)
 	{
 		labels = new Hashtable<Quadruple, List<Label>>();
 		IRList = new ArrayList<Quadruple>();
 		varList = new ArrayList<Variable>();
+		workList = new HashMap<String, String>();
 		currentScope = symbolTable;
 		blockNumber = 0;
 	}
@@ -33,6 +36,11 @@ public class IRVisitor implements Visitor
 	public Hashtable<Quadruple, List<Label>> getLabels()
 	{
 		return labels;
+	}
+	
+	public HashMap<String, String> getWorkList()
+	{
+		return workList;
 	}
 	
 	public List<Quadruple> getIR()
@@ -46,7 +54,7 @@ public class IRVisitor implements Visitor
 	}
 
 	//Helper function to add a new Label to a certain IR
-	public void addLabel(Quadruple q, boolean printBefore)
+	public String addLabel(Quadruple q, boolean printBefore)
 	{
 		List<Label> temp = labels.get(q);
 		
@@ -55,11 +63,15 @@ public class IRVisitor implements Visitor
 			temp = new ArrayList<Label>();
 		}
 
-		temp.add(new Label(printBefore));
+		Label l = new Label(printBefore);
+		
+		temp.add(l);
 		labels.put(q, temp);
+		
+		return l.getName();
 	}
 	
-	public void addLabel(Quadruple q, Label l)
+	public String addLabel(Quadruple q, Label l)
 	{
 		List<Label> temp = labels.get(q);
 		
@@ -70,6 +82,8 @@ public class IRVisitor implements Visitor
 		
 		temp.add(l);
 		labels.put(q, temp);
+		
+		return l.getName();
 	}
 	
 	//Helper function to create unique numbers (as strings) for the blocks
@@ -102,7 +116,9 @@ public class IRVisitor implements Visitor
     	n.i2.accept(this);
     	n.s.accept(this);
 		
-		addLabel(IRList.get(0), true);
+		String labelName = addLabel(IRList.get(0), true);
+		
+		workList.put("main", labelName);
 
 		currentScope = currentScope.exitScope(); //Exit "main" method
 		currentScope = currentScope.exitScope(); //Exit class
@@ -191,7 +207,9 @@ public class IRVisitor implements Visitor
     	n.e.accept(this);
 		IRList.add(new ReturnIR(n.e.generateTAC()));
 		
-		addLabel(IRList.get(size), true);
+		String labelName = addLabel(IRList.get(size), true);
+		
+		workList.put(n.i.toString(), labelName);
 		
     	currentScope = currentScope.exitScope(); //Exit method
 	}
