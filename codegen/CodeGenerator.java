@@ -32,6 +32,8 @@ public class CodeGenerator
 	
 	public void generateMIPS()
 	{
+		boolean printedExit = false; //Used to track the closing of main
+		
 		try
 		{
 			FileWriter fw = new FileWriter(output);
@@ -49,15 +51,92 @@ public class CodeGenerator
 			{
 				Quadruple q = IRList.get(i);
 				
+				List<Label> labelList = labels.get(q);
+				
+				//Print any labels before this instruction
+				if(labelList != null)
+				{
+					for(Label l : labelList)
+					{
+						if(l.printBefore == true)
+						{
+							//Print system exit at the end of main
+							if(l.toString().equals("L1:"))
+							{
+								String temp = "jal _system_exit\n";
+								bw.write(temp, 0, temp.length());
+								printedExit = true;
+							}
+							else //Print jr return jump before the label
+							{
+								if(!l.toString().equals("L0:"))
+								{
+									String temp = "jr $ra\n";
+									bw.write(temp, 0, temp.length());
+								}
+							}
+					
+							//Print label
+							String temp = l.toString() + "\n";
+							bw.write(temp, 0, temp.length());
+						}
+					}
+				}
+				
 				if(q instanceof AssignmentIR)
 				{
 					handleAssignment(q, bw);
 				}
-				
-				if(q instanceof CallIR)
+				else if(q instanceof CallIR)
 				{
 					functionCall(IRList, i, bw);
 				}
+				else if(q instanceof ReturnIR)
+				{
+					handleReturn(q, bw);
+				}
+				
+				//Print any labels after
+				if(labelList != null)
+				{
+					for(Label l : labelList)
+					{
+						if(l.printBefore == false)
+						{	
+							//Print system exit at the end of main
+							if(l.toString().equals("L1:"))
+							{
+								String temp = "jal _system_exit\n";
+								bw.write(temp, 0, temp.length());
+								printedExit = true;
+							}
+							else //Print jr return jump before the label
+							{
+								if(!l.toString().equals("L0:"))
+								{
+									String temp = "jr $ra\n";
+									bw.write(temp, 0, temp.length());
+								}
+							}
+					
+							//Print label
+							String temp = l.toString() + "\n";
+							bw.write(temp, 0, temp.length());
+						}
+					}
+				}
+			}
+			
+			//Print the closing exit/return
+			if(printedExit == true)
+			{
+				String temp = "jr $ra\n";
+				bw.write(temp, 0, temp.length());
+			}
+			else
+			{
+				String temp = "jal _system_exit\n";
+				bw.write(temp, 0, temp.length());
 			}
 			
 			//Close output file resources
@@ -97,6 +176,34 @@ public class CodeGenerator
 			{
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private void handleReturn(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			Variable arg1 = (Variable)instruction.getArg1();
+			String temp = "";
+			
+			if(arg1.getType().equals("constant"))
+			{
+				temp = "li $v0, " + arg1.getName() + "\n";
+			}
+			else if(arg1.getType().equals("temporary"))
+			{
+				temp = "move $v0, " + allocator.allocateReg(arg1.getName()) + "\n";
+			}
+			else //Variable
+			{
+				temp = "lw $v0, " + arg1.getName() + "\n";
+			}
+			
+			bw.write(temp, 0, temp.length());
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 	
@@ -270,7 +377,7 @@ public class CodeGenerator
 			
 			for(int i = 0; i < paramCount; i++)
 			{	
-				ParameterIR param = (ParameterIR)IRList.get(paramIndex);
+				ParameterIR param = (ParameterIR)IRList.get(paramIndex+i);
 				String reg = "$a" + i;
 				
 				String argName = ((Variable)param.getArg1()).getName();
@@ -294,21 +401,14 @@ public class CodeGenerator
 			
 			//Jump to the function
 			String function = (String)instruction.getArg1();
-			
-			if(function.equals("System.out.println"));
+
+			if(function.equals("System.out.println") == true)
 			{
 				function = "_system_out_println";
 			}
-			
+
 			temp = "jal " + function + "\n";
 			bw.write(temp, 0, temp.length());
-			
-			//Restore $v0-$v1 from the stack
-			for(int i = 1; i >= 0; i--)
-			{
-				temp = "lw $v" + i + ", " + (4 - (4*i)) + "($sp)\n";
-				bw.write(temp, 0, temp.length());
-			}
 			
 			//Restore $t0-$t9 from the stack
 			for(int i = 9; i >= 0; i--)
@@ -321,6 +421,30 @@ public class CodeGenerator
 			for(int i = 3; i >= 0; i--)
 			{
 				temp = "lw $a" + i + ", " + (60 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Move return value into the result register
+			if(!function.equals("_system_out_println"))  //println is the only 'void' function in minijava
+			{
+				Variable result = (Variable)instruction.getResult();
+				
+				if(result.getType().equals("temporary"))
+				{
+					temp = "move " + allocator.allocateReg(result.getName()) + ", $v0\n";
+				}
+				else //Variable
+				{
+					temp = "sw $v0, " + result.getName() + "\n";
+				}
+				
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Restore $v0-$v1 from the stack
+			for(int i = 1; i >= 0; i--)
+			{
+				temp = "lw $v" + i + ", " + (4 - (4*i)) + "($sp)\n";
 				bw.write(temp, 0, temp.length());
 			}
 			
