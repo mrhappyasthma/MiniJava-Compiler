@@ -32,6 +32,10 @@ public class BackPatcher
 				{
 					q.setArg1("_system_out_println");
 				}
+				else if(methodName.equals("System.exit"))
+				{
+					q.setArg1("_system_exit");
+				}
 				else
 				{
 					q.setArg1(workList.get(methodName));

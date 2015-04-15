@@ -74,7 +74,6 @@ public class MiniJavaCompiler
 					
 					List<Quadruple> IRList = intermediateVisitor.getIR();
 					Hashtable<Quadruple, List<Label>> labels = intermediateVisitor.getLabels();
-					List<Variable> varList = intermediateVisitor.getVars();
 					HashMap<String, String> workList = intermediateVisitor.getWorkList();
 					
 					//Backpatch the IR to resolve labels in jumps to methods
@@ -112,7 +111,7 @@ public class MiniJavaCompiler
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
 						
 					//Write MIPS
-					CodeGenerator gen = new CodeGenerator(IRList, labels, varList, fileName);
+					CodeGenerator gen = new CodeGenerator(IRList, labels, fileName);
 					gen.generateMIPS();
 					
 					//Link runtime.asm file

@@ -18,15 +18,13 @@ public class CodeGenerator
 	private String output;
 	private List<Quadruple> IRList;
 	private Hashtable<Quadruple, List<Label>> labels;
-	private List<Variable> varList;
 	private RegisterAllocator allocator;
 	
-	public CodeGenerator(List<Quadruple> list, Hashtable<Quadruple, List<Label>> label, List<Variable> vars, String fileName)
+	public CodeGenerator(List<Quadruple> list, Hashtable<Quadruple, List<Label>> label, String fileName)
 	{
 		IRList = list;
 		output = fileName;
 		labels = label;
-		varList = vars;
 		allocator = new RegisterAllocator();
 	}
 	
@@ -38,10 +36,6 @@ public class CodeGenerator
 		{
 			FileWriter fw = new FileWriter(output);
 			BufferedWriter bw = new BufferedWriter(fw);
-			
-			//Allocated Variables
-			bw.write(".data\n");
-			generateDataSeg(varList, bw);
 			
 			bw.write(".text\n", 0, 6);
 			bw.write("main:\n", 0, 6);
@@ -60,22 +54,6 @@ public class CodeGenerator
 					{
 						if(l.printBefore == true)
 						{
-							//Print system exit at the end of main
-							if(l.toString().equals("L1:"))
-							{
-								String temp = "jal _system_exit\n";
-								bw.write(temp, 0, temp.length());
-								printedExit = true;
-							}
-							else //Print jr return jump before the label
-							{
-								if(!l.toString().equals("L0:"))
-								{
-									String temp = "jr $ra\n";
-									bw.write(temp, 0, temp.length());
-								}
-							}
-					
 							//Print label
 							String temp = l.toString() + "\n";
 							bw.write(temp, 0, temp.length());
@@ -111,40 +89,12 @@ public class CodeGenerator
 					{
 						if(l.printBefore == false)
 						{	
-							//Print system exit at the end of main
-							if(l.toString().equals("L1:"))
-							{
-								String temp = "jal _system_exit\n";
-								bw.write(temp, 0, temp.length());
-								printedExit = true;
-							}
-							else //Print jr return jump before the label
-							{
-								if(!l.toString().equals("L0:"))
-								{
-									String temp = "jr $ra\n";
-									bw.write(temp, 0, temp.length());
-								}
-							}
-					
 							//Print label
 							String temp = l.toString() + "\n";
 							bw.write(temp, 0, temp.length());
 						}
 					}
 				}
-			}
-			
-			//Print the closing exit/return
-			if(printedExit == true)
-			{
-				String temp = "jr $ra\n";
-				bw.write(temp, 0, temp.length());
-			}
-			else
-			{
-				String temp = "jal _system_exit\n";
-				bw.write(temp, 0, temp.length());
 			}
 			
 			//Close output file resources
@@ -154,36 +104,6 @@ public class CodeGenerator
 		catch (IOException e)
 		{
 			e.printStackTrace();
-		}
-	}
-	
-	private void generateDataSeg(List<Variable> varList, BufferedWriter bw)
-	{
-		for(int i = 0; i < varList.size(); i++)
-		{
-			try
-			{
-				String name = varList.get(i).getName();
-				String type = varList.get(i).getType();
-				String value = "";
-				
-				if(type.equals("int") || type.equals("boolean"))
-				{
-					type = ".word";
-					value = "0"; //Default value of 0d or false
-				}
-				else //Don't handle objects or int[] yet
-				{
-					return;
-				}
-				
-				String data = name + ": " + type + " " + value + "\n";
-				bw.write(data, 0, data.length());
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
 		}
 	}
 	
@@ -330,6 +250,9 @@ public class CodeGenerator
 				temp = "lw $v0, " + arg1.getName() + "\n";
 			}
 			
+			bw.write(temp, 0, temp.length());
+			
+			temp = "jr $ra\n";
 			bw.write(temp, 0, temp.length());
 		}
 		catch(IOException e)
@@ -544,6 +467,15 @@ public class CodeGenerator
 		{
 			CallIR instruction = (CallIR)IRList.get(index);
 			int paramCount = Integer.parseInt((String)instruction.getArg2());
+			String function = (String)instruction.getArg1();
+			
+			//Handle System.exit (no need to worry about params nor registers)
+			if(function.equals("_system_exit"))
+			{
+				String temp = "jal " + function + "\n";
+				bw.write(temp, 0, temp.length());
+				return;
+			}
 			
 			//Store $ra on stack
 			String temp = "addi $sp, $sp, -68\n";  //Make enough space on stack to save all reg
@@ -606,8 +538,6 @@ public class CodeGenerator
 			}
 			
 			//Jump to the function
-			String function = (String)instruction.getArg1();
-
 			temp = "jal " + function + "\n";
 			bw.write(temp, 0, temp.length());
 			
