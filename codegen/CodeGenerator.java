@@ -217,113 +217,89 @@ public class CodeGenerator
 			Variable arg2 = (Variable)instruction.getArg2();
 			String temp = "";
 			
-			if(op.equals("+"))
+			if(result.getType().equals("temporary"))
 			{
+				String resultReg;
+				String tempReg;
+				String resultName = (String)result.getName();
+				
 				if(result.getType().equals("temporary"))
 				{
-					String resultReg = allocator.allocateReg(result.getName());
-					
-					//Handle arg1 -- Store the first parameter in the result register
-					if(arg1.getType().equals("constant"))
-					{
-						temp = "li " + resultReg + ", " + arg1.getName() + "\n";
-					}
-					else if(arg1.getType().equals("temporary"))
-					{
-						temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
-					}
-					else //Variable arg1
-					{
-						temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
-					}
-					
-					bw.write(temp, 0, temp.length());
-					
-					//Handle arg2 -- Add it to the second parameter in the result register
-					if(arg2.getType().equals("constant"))
-					{
-						temp = "addi " + resultReg + ", " + resultReg + ", " + arg2.getName() + "\n";
-					}
-					else if(arg2.getType().equals("temporary"))
-					{
-						temp = "add " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
-					}
-					else //Variable arg2
-					{
-						String tempReg = allocator.allocateTempReg(0);
-						temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
-						bw.write(temp, 0, temp.length());
-						
-						temp = "add " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
-					}
-					
-					bw.write(temp, 0, temp.length());
+					resultReg = allocator.allocateReg(result.getName());
+					tempReg = allocator.allocateTempReg(0);
 				}
 				else //Variable result
 				{
-					String resultReg = allocator.allocateTempReg(0);
-					String tempReg = allocator.allocateTempReg(1);
-					String resultName = (String)result.getName();
+					resultReg = allocator.allocateTempReg(0);
+					tempReg = allocator.allocateTempReg(1);
+				}
 					
-					//Handle arg1 -- Store the first parameter in the temporary register
-					if(arg1.getType().equals("constant"))
-					{
-						temp = "li " + tempReg + ", " + arg1.getName() + "\n";
-					}
-					else if(arg1.getType().equals("temporary"))
-					{
-						temp = "move " + tempReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
-					}
-					else //Variable arg1
-					{
-						temp = "lw " + tempReg + ", " + arg1.getName() + "\n";
-					}
+				//Handle arg1 -- Store the first parameter in the result register
+				if(arg1.getType().equals("constant"))
+				{
+					temp = "li " + resultReg + ", " + arg1.getName() + "\n";
+				}
+				else if(arg1.getType().equals("temporary"))
+				{
+					temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
+				}
+				else //Variable arg1
+				{
+					temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+				}
 					
+				bw.write(temp, 0, temp.length());
+			
+				//Handle arg2 -- Add it to the second parameter in the result register
+				if(arg2.getType().equals("constant"))
+				{
+					if(op.equals("+"))
+					{
+						temp = "addi " + resultReg + ", " + resultReg + ", " + arg2.getName() + "\n";
+					}
+					else if(op.equals("-"))
+					{
+						temp = "addi " + resultReg + ", " + resultReg + (Integer.parseInt(arg2.getName())*-1) + "\n";
+					}
+				}
+				else if(arg2.getType().equals("temporary"))
+				{
+					if(op.equals("+"))
+					{	
+						temp = "add " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+					}
+					else if(op.equals("-"))
+					{
+						temp = "sub " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+					}
+				}
+				else //Variable arg2
+				{
+					temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
 					bw.write(temp, 0, temp.length());
 					
-					//Handle arg2 -- Add it to the second parameter in the temp register
-					if(arg2.getType().equals("constant"))
+					if(op.equals("+"))
 					{
-						temp = "addi " + tempReg + ", " + tempReg + ", " + arg2.getName() + "\n";
+						temp = "add " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
 					}
-					else if(arg2.getType().equals("temporary"))
+					else if(op.equals("-"))
 					{
-						temp = "add " + tempReg + ", " + tempReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+						temp = "sub " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
 					}
-					else //Variable arg2
-					{
-						temp = "lw " + resultReg + ", " + arg2.getName() + "\n"; //Use "resultReg" as a temporary register here
-						bw.write(temp, 0, temp.length());
-						
-						temp = "add " + tempReg + ", " + tempReg + ", " + resultReg;
-					}
+				}
 					
-					bw.write(temp, 0, temp.length());
-					
+				bw.write(temp, 0, temp.length());
+				
+				if(!result.getType().equals("temporary")) //Variable result
+				{
 					//Load address of variable
-					temp = "la " + resultReg + ", " + resultName + "\n";
+					temp = "la " + tempReg + ", " + resultName + "\n";
 					bw.write(temp, 0, temp.length());
 					
-					//Store result from tempReg into the variable address
-					temp = "sw " + tempReg + ", 0(" + resultReg + ")\n";
+					//Store result from resultReg into the variable address
+					temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
 					bw.write(temp, 0, temp.length());
 				}
-			}
-			else if(op.equals("-")) //Subtraction
-			{
-				//To be completed...
-			}
-			else if(op.equals("*")) //Multiplication
-			{
-				//To be completed...
-			}
-			else if(op.equals("<")) //Less Than
-			{
-				//To be completed...
-			}
-			else //And
-			{
-				//To be completed...
 			}
 		}
 		catch (IOException e)
