@@ -398,6 +398,30 @@ public class CodeGenerator
 					
 					temp = "mflo " + resultReg + "\n";
 				}
+				else if(op.equals("<"))
+				{
+					Label L1 = new Label(false);
+					Label L2 = new Label(false);
+					
+					//If arg 1 < arg2, branch to L1 and store "1" inside resultReg
+					temp = "blt " + resultReg + ", " + arg2.getName() + ", " + L1.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					//Else fallthrough and store "0" inside resultReg
+					temp = "add " + resultReg + ", $zero, $zero\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "j " + L2.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L1.toString() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "addi " + resultReg + ", $zero, 1\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L2.toString() + "\n";
+				}
 			}
 			else if(arg2.getType().equals("temporary"))
 			{
@@ -415,6 +439,30 @@ public class CodeGenerator
 					bw.write(temp, 0, temp.length());
 					
 					temp = "mflo " + resultReg + "\n";
+				}
+				else if(op.equals("<"))
+				{
+					Label L1 = new Label(false);
+					Label L2 = new Label(false);
+					
+					//If arg 1 < arg2, branch to L1 and store "1" inside resultReg
+					temp = "blt " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + ", " + L1.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					//Else fallthrough and store "0" inside resultReg
+					temp = "add " + resultReg + ", $zero, $zero\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "j " + L2.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L1.toString() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "addi " + resultReg + ", $zero, 1\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L2.toString() + "\n";
 				}
 			}
 			else //Variable arg2
@@ -436,6 +484,30 @@ public class CodeGenerator
 					bw.write(temp, 0, temp.length());
 					
 					temp = "mflo " + resultReg + "\n";
+				}
+				else if(op.equals("<"))
+				{
+					Label L1 = new Label(false);
+					Label L2 = new Label(false);
+					
+					//If arg 1 < arg2, branch to L1 and store "1" inside resultReg
+					temp = "blt " + resultReg + ", " + tempReg + ", " + L1.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					//Else fallthrough and store "0" inside resultReg
+					temp = "add " + resultReg + ", $zero, $zero\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "j " + L2.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L1.toString() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "addi " + resultReg + ", $zero, 1\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = L2.toString() + "\n";
 				}
 			}
 					
