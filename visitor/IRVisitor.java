@@ -21,7 +21,7 @@ public class IRVisitor implements Visitor
 	private List<Quadruple> IRList; 
 	private Hashtable<Quadruple, List<Label>> labels;
 	private List<Variable> varList;
-	private HashMap<String, String> workList;
+	private HashMap<String, String> workList;   //A mapping of method calls to labels... i.e.  'foo()' --> 'L1:"
 	
 	public IRVisitor(Scope symbolTable)
 	{
