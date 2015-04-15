@@ -388,6 +388,16 @@ public class CodeGenerator
 				{
 					temp = "addi " + resultReg + ", " + resultReg + (Integer.parseInt(arg2.getName())*-1) + "\n";
 				}
+				else if(op.equals("*"))
+				{
+					temp = "li " + tempReg + ", " + arg2.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "mult " + resultReg + ", " + tempReg + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "mflo " + resultReg + "\n";
+				}
 			}
 			else if(arg2.getType().equals("temporary"))
 			{
@@ -398,6 +408,13 @@ public class CodeGenerator
 				else if(op.equals("-"))
 				{
 					temp = "sub " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+				}
+				else if(op.equals("*"))
+				{
+					temp = "mult " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "mflo " + resultReg + "\n";
 				}
 			}
 			else //Variable arg2
@@ -412,6 +429,13 @@ public class CodeGenerator
 				else if(op.equals("-"))
 				{
 					temp = "sub " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
+				}
+				else if(op.equals("*"))
+				{
+					temp = "mult " + resultReg + ", " + tempReg + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "mflo " + resultReg + "\n";
 				}
 			}
 					
