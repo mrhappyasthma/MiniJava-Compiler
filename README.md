@@ -3,6 +3,8 @@ This is a simple compiler written in Java to compile the subset of Java called "
 
 >MiniJava is a subset of Java. The meaning of a MiniJava program is given by its meaning as a Java program. Overloading is not allowed in MiniJava. The MiniJava statement System.out.println( ... ); can only print integers. The MiniJava expression e.length only applies to expressions of type int [].
 
+Additionally, it should be noted that our compiler only supports functions with a maximum of 4 arguments (3 parameters + the implicity "this" for the non-static functions) for all functions aside from "main(String[] args)" and "System.out.println()".
+
 ### To Build:
 
 The easiest way to build the project is with the provided Makefile on a linux environment.  Simply running ```make``` should build everything for you.</li>
