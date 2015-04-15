@@ -95,6 +95,14 @@ public class CodeGenerator
 				{
 					handleReturn(q, bw);
 				}
+				else if(q instanceof CopyIR)
+				{
+					handleCopy(q, bw);
+				}
+				else if(q instanceof UnaryAssignmentIR)
+				{
+					handleUnaryAssignment(q, bw);
+				}
 				
 				//Print any labels after
 				if(labelList != null)
@@ -179,6 +187,72 @@ public class CodeGenerator
 		}
 	}
 	
+	private void handleCopy(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			Variable result = (Variable)instruction.getResult();
+			Variable arg1 = (Variable)instruction.getArg1();
+			String resultName = result.getName();
+			String temp = "";
+			String resultReg;
+			String tempReg = null;
+				
+			if(result.getType().equals("temporary"))
+			{
+				resultReg = allocator.allocateReg(result.getName());
+			}
+			else //Variable result
+			{
+				resultReg = allocator.allocateTempReg(0);
+				tempReg = allocator.allocateTempReg(1);
+			}
+					
+			//Handle arg1 -- Store the first parameter in the result register
+			if(arg1.getType().equals("constant"))
+			{
+				temp = "li " + resultReg + ", " + arg1.getName() + "\n";
+			}
+			else if(arg1.getType().equals("temporary"))
+			{
+				temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
+			}
+			else //Variable arg1
+			{
+				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+			}
+					
+			bw.write(temp, 0, temp.length());
+			
+			if(!result.getType().equals("temporary")) //Variable result
+			{
+				//Load address of variable
+				temp = "la " + tempReg + ", " + resultName + "\n";
+				bw.write(temp, 0, temp.length());
+					
+				//Store result from resultReg into the variable address
+				temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
+				bw.write(temp, 0, temp.length());
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleUnaryAssignment(Quadruple instruction, BufferedWriter bw)
+	{
+		/*try
+		{
+			
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}*/
+	}
+	
 	private void handleReturn(Quadruple instruction, BufferedWriter bw)
 	{
 		try
@@ -215,91 +289,87 @@ public class CodeGenerator
 			Variable result = (Variable)instruction.getResult();
 			Variable arg1 = (Variable)instruction.getArg1();
 			Variable arg2 = (Variable)instruction.getArg2();
+			String resultName = result.getName();
 			String temp = "";
-			
+			String resultReg;
+			String tempReg;
+				
 			if(result.getType().equals("temporary"))
 			{
-				String resultReg;
-				String tempReg;
-				String resultName = (String)result.getName();
-				
-				if(result.getType().equals("temporary"))
-				{
-					resultReg = allocator.allocateReg(result.getName());
-					tempReg = allocator.allocateTempReg(0);
-				}
-				else //Variable result
-				{
-					resultReg = allocator.allocateTempReg(0);
-					tempReg = allocator.allocateTempReg(1);
-				}
+				resultReg = allocator.allocateReg(result.getName());
+				tempReg = allocator.allocateTempReg(0);
+			}
+			else //Variable result
+			{
+				resultReg = allocator.allocateTempReg(0);
+				tempReg = allocator.allocateTempReg(1);
+			}
 					
-				//Handle arg1 -- Store the first parameter in the result register
-				if(arg1.getType().equals("constant"))
-				{
-					temp = "li " + resultReg + ", " + arg1.getName() + "\n";
-				}
-				else if(arg1.getType().equals("temporary"))
-				{
-					temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
-				}
-				else //Variable arg1
-				{
-					temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
-				}
+			//Handle arg1 -- Store the first parameter in the result register
+			if(arg1.getType().equals("constant"))
+			{
+				temp = "li " + resultReg + ", " + arg1.getName() + "\n";
+			}
+			else if(arg1.getType().equals("temporary"))
+			{
+				temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
+			}
+			else //Variable arg1
+			{
+				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+			}
 					
-				bw.write(temp, 0, temp.length());
+			bw.write(temp, 0, temp.length());
 			
-				//Handle arg2 -- Add it to the second parameter in the result register
-				if(arg2.getType().equals("constant"))
+			//Handle arg2 -- Add it to the second parameter in the result register
+			if(arg2.getType().equals("constant"))
+			{
+				if(op.equals("+"))
 				{
-					if(op.equals("+"))
-					{
-						temp = "addi " + resultReg + ", " + resultReg + ", " + arg2.getName() + "\n";
-					}
-					else if(op.equals("-"))
-					{
-						temp = "addi " + resultReg + ", " + resultReg + (Integer.parseInt(arg2.getName())*-1) + "\n";
-					}
+					temp = "addi " + resultReg + ", " + resultReg + ", " + arg2.getName() + "\n";
 				}
-				else if(arg2.getType().equals("temporary"))
+				else if(op.equals("-"))
 				{
-					if(op.equals("+"))
-					{	
-						temp = "add " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
-					}
-					else if(op.equals("-"))
-					{
-						temp = "sub " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
-					}
+					temp = "addi " + resultReg + ", " + resultReg + (Integer.parseInt(arg2.getName())*-1) + "\n";
 				}
-				else //Variable arg2
+			}
+			else if(arg2.getType().equals("temporary"))
+			{
+				if(op.equals("+"))
+				{	
+					temp = "add " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
+				}
+				else if(op.equals("-"))
 				{
-					temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
-					bw.write(temp, 0, temp.length());
-					
-					if(op.equals("+"))
-					{
-						temp = "add " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
-					}
-					else if(op.equals("-"))
-					{
-						temp = "sub " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
-					}
+					temp = "sub " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
 				}
-					
+			}
+			else //Variable arg2
+			{
+				temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
 				bw.write(temp, 0, temp.length());
 				
-				if(!result.getType().equals("temporary")) //Variable result
+				if(op.equals("+"))
 				{
-					//Load address of variable
-					temp = "la " + tempReg + ", " + resultName + "\n";
-					bw.write(temp, 0, temp.length());
-					
-					//Store result from resultReg into the variable address
-					temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
-					bw.write(temp, 0, temp.length());
+					temp = "add " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
 				}
+				else if(op.equals("-"))
+				{
+					temp = "sub " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
+				}
+			}
+					
+			bw.write(temp, 0, temp.length());
+				
+			if(!result.getType().equals("temporary")) //Variable result
+			{
+				//Load address of variable
+				temp = "la " + tempReg + ", " + resultName + "\n";
+				bw.write(temp, 0, temp.length());
+					
+				//Store result from resultReg into the variable address
+				temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
+				bw.write(temp, 0, temp.length());
 			}
 		}
 		catch (IOException e)
