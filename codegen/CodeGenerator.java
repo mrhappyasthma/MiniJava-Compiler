@@ -422,6 +422,10 @@ public class CodeGenerator
 					
 					temp = L2.toString() + "\n";
 				}
+				else if(op.equals("&&"))
+				{
+					temp = "andi " + resultReg + ", " + resultReg + ", " + arg2.getName() + "\n";
+				}
 			}
 			else if(arg2.getType().equals("temporary"))
 			{
@@ -463,6 +467,10 @@ public class CodeGenerator
 					bw.write(temp, 0, temp.length());
 					
 					temp = L2.toString() + "\n";
+				}
+				else if(op.equals("&&"))
+				{
+					temp = "and " + resultReg + ", " + resultReg + ", " + allocator.allocateReg(arg2.getName()) + "\n";
 				}
 			}
 			else //Variable arg2
@@ -508,6 +516,10 @@ public class CodeGenerator
 					bw.write(temp, 0, temp.length());
 					
 					temp = L2.toString() + "\n";
+				}
+				else if(op.equals("&&"))
+				{
+					temp = "and " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
 				}
 			}
 					
