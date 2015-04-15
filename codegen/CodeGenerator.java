@@ -193,10 +193,8 @@ public class CodeGenerator
 		{
 			Variable result = (Variable)instruction.getResult();
 			Variable arg1 = (Variable)instruction.getArg1();
-			String resultName = result.getName();
 			String temp = "";
 			String resultReg;
-			String tempReg = null;
 				
 			if(result.getType().equals("temporary"))
 			{
@@ -205,7 +203,6 @@ public class CodeGenerator
 			else //Variable result
 			{
 				resultReg = allocator.allocateTempReg(0);
-				tempReg = allocator.allocateTempReg(1);
 			}
 					
 			//Handle arg1 -- Store the first parameter in the result register
@@ -226,12 +223,8 @@ public class CodeGenerator
 			
 			if(!result.getType().equals("temporary")) //Variable result
 			{
-				//Load address of variable
-				temp = "la " + tempReg + ", " + resultName + "\n";
-				bw.write(temp, 0, temp.length());
-					
 				//Store result from resultReg into the variable address
-				temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
+				temp = "sw " + resultReg + result.getName() + "\n";
 				bw.write(temp, 0, temp.length());
 			}
 		}
@@ -243,14 +236,78 @@ public class CodeGenerator
 	
 	private void handleUnaryAssignment(Quadruple instruction, BufferedWriter bw)
 	{
-		/*try
+		try
 		{
+			String op = (String)instruction.getOp();
+			Variable result = (Variable)instruction.getResult();
+			Variable arg1 = (Variable)instruction.getArg1();
+			String resultReg;
+			String temp;
 			
+			if(result.getType().equals("temporary"))
+			{
+				resultReg = allocator.allocateReg(result.getName());
+			}
+			else //Variable
+			{
+				resultReg = allocator.allocateTempReg(0);
+			}
+			
+			//Handle arg1 -- Store the first parameter in the result register
+			if(arg1.getType().equals("constant"))
+			{
+				temp = "li " + resultReg + ", " + arg1.getName() + "\n";
+			}
+			else if(arg1.getType().equals("temporary"))
+			{
+				temp = "move " + resultReg + ", " + allocator.allocateReg(arg1.getName()) + "\n";
+			}
+			else //Variable arg1
+			{
+				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+			}
+					
+			bw.write(temp, 0, temp.length());
+			
+			if(op.equals("!"))
+			{
+				Label L1 = new Label(false);
+				Label L2 = new Label(false);
+				
+				//Check if we have 0 (false), if so, jump to new label L1 and store "1" in the resultReg
+				temp = "beq " + resultReg + ", $zero, " + L1.getName() + "\n";
+				bw.write(temp, 0, temp.length());
+				
+				//Otherwise, fallthrough and store "-" in result reg
+				temp = "add " + resultReg + ", $zero, $zero\n";
+				bw.write(temp, 0, temp.length());
+				
+				temp = "j " + L2.getName() + "\n";
+				bw.write(temp, 0, temp.length());
+				
+				temp = L1.toString() + "\n";
+				bw.write(temp, 0, temp.length());
+				
+				temp = "addi " + resultReg + ", $zero, 1\n";
+				bw.write(temp, 0, temp.length());
+				
+				temp = L2.toString() + "\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			bw.write(temp, 0, temp.length());
+			
+			if(!result.getType().equals("temporary")) //Variable result
+			{
+				//Store result from resultReg into the variable address
+				temp = "sw " + resultReg + result.getName() + "\n";
+				bw.write(temp, 0, temp.length());
+			}
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
-		}*/
+		}
 	}
 	
 	private void handleReturn(Quadruple instruction, BufferedWriter bw)
@@ -289,7 +346,6 @@ public class CodeGenerator
 			Variable result = (Variable)instruction.getResult();
 			Variable arg1 = (Variable)instruction.getArg1();
 			Variable arg2 = (Variable)instruction.getArg2();
-			String resultName = result.getName();
 			String temp = "";
 			String resultReg;
 			String tempReg;
@@ -363,12 +419,8 @@ public class CodeGenerator
 				
 			if(!result.getType().equals("temporary")) //Variable result
 			{
-				//Load address of variable
-				temp = "la " + tempReg + ", " + resultName + "\n";
-				bw.write(temp, 0, temp.length());
-					
 				//Store result from resultReg into the variable address
-				temp = "sw " + resultReg + ", 0(" + tempReg + ")\n";
+				temp = "sw " + resultReg + result.getName() + "\n";
 				bw.write(temp, 0, temp.length());
 			}
 		}
