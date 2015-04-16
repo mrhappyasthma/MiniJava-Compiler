@@ -33,4 +33,24 @@ public abstract class Quadruple
 	{
 		return result;
 	}
+	
+	public void setOp(Object o)
+	{
+		op = o;
+	}
+	
+	public void setArg1(Object o)
+	{
+		arg1 = o;
+	}
+	
+	public void setArg2(Object o)
+	{
+		arg2 = o;
+	}
+	
+	public void setResult(Object o)
+	{
+		result = o;
+	}
 }
