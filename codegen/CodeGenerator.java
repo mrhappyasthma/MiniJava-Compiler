@@ -313,10 +313,10 @@ public class CodeGenerator
 				}
 				else if(op.equals("*"))
 				{
-					temp = "li " + tempReg + ", " + arg2.getName() + "\n";
+					temp = "li " + resultReg + ", " + arg2.getName() + "\n";
 					bw.write(temp, 0, temp.length());
 					
-					temp = "mult " + resultReg + ", " + tempReg + "\n";
+					temp = "mult " + resultReg + ", " + resultReg + "\n";
 					bw.write(temp, 0, temp.length());
 					
 					temp = "mflo " + resultReg + "\n";
