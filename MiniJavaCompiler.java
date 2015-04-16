@@ -115,10 +115,10 @@ public class MiniJavaCompiler
 					CodeGenerator gen = new CodeGenerator(IRList, labels, fileName);
 					gen.generateMIPS();
 					
-					//System.out.println("\n Testing Graph");
-					//AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
-					//asmFG.buildCFG();
-					//asmFG.printGraph();
+					System.out.println("\n Testing Graph");
+					AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
+					asmFG.buildCFG();
+					asmFG.printGraph();
 
 					//Link runtime.asm file
 					Linker linker = new Linker("linker/runtime.asm", fileName);

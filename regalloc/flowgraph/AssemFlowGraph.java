@@ -31,10 +31,6 @@ public class AssemFlowGraph{
                     //if is not the last node
                     if(i != graph.size()-2){
                         Node aux = graph.get(i+1);
-			System.out.println(i);
-			if(aux==null){
-				System.out.println("null"); 
-			}
                         n.addNext(aux);
                     }
                 }
@@ -48,7 +44,7 @@ public class AssemFlowGraph{
                         }
                         else{
                             int numLabel = labelNode.get(strAux.get(j));
-                            n.addNext(graph.get(numLabel));
+			    n.addNext(graph.get(numLabel));
                         }
                         
                     }
@@ -72,6 +68,10 @@ public class AssemFlowGraph{
                             //save label and its number
                             labelNode.put(l.getName(), i);
                         }
+			//the label can be in one line but actually represents the next one
+			else{
+				labelNode.put(l.getName(),i+1);
+			}
                     }
  
                 }
@@ -89,7 +89,7 @@ public class AssemFlowGraph{
                 }
                 graph.add(n);
             }
-	    System.out.println("Graph without flow:");
+	    System.out.println("\nGraph without flow:");
             printGraph();
 	    System.out.println();
         }
@@ -98,17 +98,19 @@ public class AssemFlowGraph{
             for (int i = 0; i < graph.size(); i++) {
                
 		Node n = graph.get(i);
-                System.out.print(i+"  ");
-		System.out.println(n.getInstr().toString());
-                /*List<Node> listN = n.nextNode();
-                if(listN!=null){
-                    System.out.println("Nexts:");
+		System.out.print(n.getNum()+ " ");
+                System.out.println(n.getInstr().toString());
+                List<Node> listN = n.nextNode();
+                if(listN.size()!=0){
+		    
+	            System.out.println("Nexts:");
                     for (int j = 0; j < listN.size(); j++) {
-                        System.out.println(listN.get(i).getInstr().toString());
+			System.out.print(listN.get(j).getNum()+ " ");
+                        System.out.println(listN.get(j).getInstr().toString());
                     
                     }
                 }
-                */
+                
                 
             }
             
