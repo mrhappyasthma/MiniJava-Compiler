@@ -1,51 +1,52 @@
-package graph;
+package regalloc.graph;
+
+import IR.Quadruple;
+import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Node {
-
-    Graph mygraph;
-    private Node(){}
-    int mykey;
-    public Node(Graph g) {
-	mygraph=g; 
-	mykey= g.nodecount++;
-	NodeList p = new NodeList(this, null);
-	if (g.mylast==null)
-	   g.mynodes=g.mylast=p;
-	else g.mylast = g.mylast.tail = p;
+    Quadruple instr;
+    int num;
+    List<String> jumpToLabel;
+    List<Node> next;
+    
+    public Node (Quadruple IR, int n){
+        instr = IR;
+        num=n;
+        jumpToLabel = new ArrayList<String>();
+	next = new ArrayList<Node>();
     }
-
-    NodeList succs;
-    NodeList preds;
-    public NodeList succ() {return succs;}
-    public NodeList pred() {return preds;}
-      NodeList cat(NodeList a, NodeList b) {
-          if (a==null) return b;
-	  else return new NodeList(a.head, cat(a.tail,b));
+    
+    //
+    public void addJumpTo(String name){
+        jumpToLabel.add(name);
     }
-    public NodeList adj() {return cat(succ(), pred());}
-
-    int len(NodeList l) {
-	int i=0;
-	for(NodeList p=l; p!=null; p=p.tail) i++;
-	return i;
+    //can be a label or the next instruction
+    public List<String> nextLabel(){
+        return jumpToLabel;
     }
-
-    public int inDegree() {return len(pred());}
-    public int outDegree() {return len(succ());}
-    public int degree() {return inDegree()+outDegree();} 
-
-    public boolean goesTo(Node n) {
-	return Graph.inList(n, succ());
+    
+    public void addNext(Node n){
+        if(n!=null){
+		next.add(n);
+	}
     }
-
-    public boolean comesFrom(Node n) {
-	return Graph.inList(n, pred());
+    
+    public List<Node> nextNode(){
+        return next;
     }
-
-    public boolean adj(Node n) {
-	return goesTo(n) || comesFrom(n);
+    
+    public Quadruple getInstr(){
+        return instr;
     }
-
-    public String toString() {return String.valueOf(mykey);}
+    
+    public int getNum(){
+        return num;
+    }    
+   
+   
+    
 
 }
+
