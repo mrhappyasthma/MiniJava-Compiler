@@ -10,7 +10,7 @@ public class ExpList {
    }
 
    public void addElement(Exp n) {
-      list.addElement(n);
+      list.add(0, n);
    }
 
    public Exp elementAt(int i)  { 

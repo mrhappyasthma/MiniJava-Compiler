@@ -214,8 +214,8 @@ public class BuildSymbolTableVisitor implements Visitor
     
 		for ( int i = 0; i < n.fl.size(); i++ ) 
 		{
-			paramNames[i+1] = n.fl.elementAt(i).i.toString();
-			paramTypes[i+1] = getTypeStr(n.fl.elementAt(i).t);
+			paramNames[n.fl.size()-i] = n.fl.elementAt(i).i.toString();
+			paramTypes[n.fl.size()-i] = getTypeStr(n.fl.elementAt(i).t);
 			n.fl.elementAt(i).accept(this);
 		}
 		

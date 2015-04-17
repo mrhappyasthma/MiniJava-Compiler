@@ -384,7 +384,7 @@ public class IRVisitor implements Visitor
 		//Add the caller as the "this" parameter
 		IRList.add(new ParameterIR(n.e.generateTAC()));
 		
-		for(int i = 0; i < n.el.size(); i++)
+		for(int i = n.el.size()-1; i >= 0; i--) //Hotfix to solve out-of-order params
 		{
 			IRList.add(new ParameterIR(n.el.elementAt(i).generateTAC()));
 		}

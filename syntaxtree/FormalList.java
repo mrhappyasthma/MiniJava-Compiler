@@ -10,7 +10,7 @@ public class FormalList {
    }
 
    public void addElement(Formal n) {
-      list.addElement(n);
+      list.add(0, n);
    }
 
    public Formal elementAt(int i)  { 
