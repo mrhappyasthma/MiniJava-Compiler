@@ -669,7 +669,11 @@ public class CodeGenerator
                     if(arg1.getOffset() == -1)
 					{
 						//Since are overwriting $aX registers, we need to get their old value off the stack if needed
-						if(arg1.getRegister().equals("$a0"))
+						if(arg1.getName().equals("this"))
+						{
+							temp = "lw " + reg + ", 60($sp)\n";
+						}
+						else if(arg1.getRegister().equals("$a0"))
 						{
 							temp = "lw " + reg + ", 60($sp)\n";
 						}
