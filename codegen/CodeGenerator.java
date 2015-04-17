@@ -97,6 +97,14 @@ public class CodeGenerator
 				{
 					handleUnaryAssignment(q, bw);
 				}
+				else if(q instanceof UnconditionalJumpIR)
+				{
+					handleUnconditionalJump(q, bw);
+				}
+				else if(q instanceof ConditionalJumpIR)
+				{
+					handleConditionalJump(q, bw);
+				}
 				
 				//Print any labels after
 				if(labelList != null)
@@ -118,6 +126,61 @@ public class CodeGenerator
 				bw.close();
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleConditionalJump(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			String label = ((Label)instruction.getResult()).getName();
+			Variable arg1 = (Variable)instruction.getArg1();
+			String temp;
+			
+			//Handle arg1 -- Store the first parameter in the result register
+			if(arg1.getType().equals("constant"))
+			{
+				String tempReg = allocator.allocateTempReg(0);
+				temp = "beq " + tempReg + ", $zero, " + label + "\n";
+			}
+			else if(arg1.getType().equals("temporary"))
+			{
+				temp = "beq " + allocator.allocateReg(arg1.getName()) + ", $zero, " + label + "\n";
+			}
+			else //Variable arg1
+			{
+				if(arg1.getOffset() == -1)
+				{
+					temp = "beq " + arg1.getRegister() + ", $zero, " + label + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+					temp = "";
+				}
+			}
+			
+			bw.write(temp, 0, temp.length());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleUnconditionalJump(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			String label = ((Label)instruction.getResult()).getName();
+			
+			String temp = "j " + label + "\n";
+			
+			bw.write(temp, 0, temp.length());
+		}
+		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
