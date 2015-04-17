@@ -454,9 +454,9 @@ public class CodeGenerator
 			{
 				String varReg = "";
 				
-				if(arg1.getOffset() == -1)
+				if(arg2.getOffset() == -1)
 				{
-					varReg = arg1.getRegister();
+					varReg = arg2.getRegister();
 				}
 				else //Class variable
 				{
@@ -601,7 +601,27 @@ public class CodeGenerator
                 {              
                     if(arg1.getOffset() == -1)
 					{
-						temp = "move " + reg + ", " + arg1.getRegister() + "\n";
+						//Since are overwriting $aX registers, we need to get their old value off the stack if needed
+						if(arg1.getRegister().equals("$a0"))
+						{
+							temp = "lw " + reg + ", 60($sp)\n";
+						}
+						else if(arg1.getRegister().equals("$a1"))
+						{
+							temp = "lw " + reg + ", 56($sp)\n";
+						}
+						else if(arg1.getRegister().equals("$a2"))
+						{
+							temp = "lw " + reg + ", 52($sp)\n";
+						}
+						else if(arg1.getRegister().equals("$a3"))
+						{
+							temp = "lw " + reg + ", 48($sp)\n";
+						}
+						else
+						{
+							temp = "move " + reg + ", " + arg1.getRegister() + "\n";
+						}
 					}
 					else //Class variable
 					{
