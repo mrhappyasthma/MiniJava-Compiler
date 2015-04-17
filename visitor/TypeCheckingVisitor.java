@@ -777,6 +777,8 @@ public class TypeCheckingVisitor implements TypeVisitor
 	Variable callee = currentScope.lookupVariable(varName);
 	String className;
 	
+	n.i.accept(this);
+	
 	//Resolve identifier vs type name problem
 	if(callee == null)
 	{
@@ -793,17 +795,11 @@ public class TypeCheckingVisitor implements TypeVisitor
 	{
 		errorDetected = true;
 		System.out.println("Attempt to call a non-method at line"+n.i.lineNum+", character "+n.i.charNum);
-		
-		n.e.accept(this);
-		n.i.accept(this);
 	
 		return new VoidType();
 	}
 	
 	String returnType = cst.getMethod(methName).getReturnType();
-	
-	n.e.accept(this);
-    n.i.accept(this);
 	
 	boolean numParamError = false;
 	
@@ -814,7 +810,7 @@ public class TypeCheckingVisitor implements TypeVisitor
 		System.out.println("Call of method " + methName + " does not match its declared number of arguments at line " + n.lineNum + ", character " + n.charNum);
 	}
 	
-	Object[] params = cst.getMethod(methName).getParameters();
+	Variable[] params = cst.getMethod(methName).getParameters();
 	
     for ( int i = 0; i < n.el.size(); i++ ) 
 	{
@@ -822,7 +818,7 @@ public class TypeCheckingVisitor implements TypeVisitor
 		
 		if(!numParamError)
 		{
-			Variable v = (Variable) params[i+1];
+			Variable v = params[i+1];
 
 			if(!compareTypes(t, strToType(v.getType())))
 			{
