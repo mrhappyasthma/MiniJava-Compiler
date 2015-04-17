@@ -13,6 +13,8 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	private String name;
 	private String parentClass;
 	private Hashtable<String, MethodSymbolTable> methods;
+	private int size; //Size in bytes of the entire class
+	private int offset; //Offset variable locations based on the offset from any inherited sizes
 	
 	public ClassSymbolTable(Scope parent, String name, String parentClass)
 	{
@@ -20,6 +22,8 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 		this.parentClass = parentClass;
 		this.name = name;
 		methods = new Hashtable<String, MethodSymbolTable>();
+		size = -1;
+		offset = -1;
 	}
 	
 	public Scope enterScope(String name)
@@ -30,6 +34,78 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	public void addMethod(String name, String[] paramNames, String[] paramTypes, String returnType)
 	{
 		methods.put(name, new MethodSymbolTable(this, name, paramNames, paramTypes, returnType));
+	}
+	
+	public Hashtable<String, MethodSymbolTable> getMethods()
+	{
+		return methods;
+	}
+	
+	public void calculateVarOffsets()
+	{
+		int parentOffset = this.getOffset();
+		int localOffset = 0;
+		
+		Set<String> keys = vars.keySet();
+		
+		for(String key : keys)
+		{
+			Variable v = vars.get(key);
+			v.setOffset(parentOffset + localOffset);
+			
+			localOffset += 4;
+		}
+	}
+	
+	private int calculateSize()
+	{
+		size = 0;
+		Set<String> keys = vars.keySet();
+		
+		for(String key : keys)
+		{
+			//All types of variables will be 4 bytes (int, int[], class references, boolean)
+			size += 4;
+		}
+		
+		if(parentClass != null)
+		{
+			size += ((ClassSymbolTable)parent.enterScope(parentClass)).getSize();
+		}
+		
+		return size;
+	}
+	
+	public int getSize()
+	{
+		if(size == -1)
+		{
+			size = calculateSize();
+		}
+		
+		return size;
+	}
+	
+	private int calculateOffset()
+	{
+		offset = 0;
+		
+		if(parentClass != null)
+		{
+			offset = ((ClassSymbolTable)parent.enterScope(parentClass)).getSize();
+		}
+		
+		return offset;
+	}
+	
+	public int getOffset()
+	{
+		if(offset == -1)
+		{
+			offset = calculateOffset();
+		}
+		
+		return offset;
 	}
 	
 	//Helper function

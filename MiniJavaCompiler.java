@@ -13,6 +13,8 @@ import helper.*;
 import linker.*;
 import codegen.*;
 import backpatching.*;
+import regalloc.*;
+import java.util.Set;
 import java.util.List;
 import java.util.Hashtable;
 import java.util.HashMap;
@@ -77,12 +79,33 @@ public class MiniJavaCompiler
 					Hashtable<Quadruple, List<Label>> labels = intermediateVisitor.getLabels();
 					HashMap<String, String> workList = intermediateVisitor.getWorkList();
 					
+					//Allocate Registers
+					RegisterAllocator allocator = new RegisterAllocator();
+					
+					SymbolTable symTable = (SymbolTable)symbolTable;
+					Hashtable <String, ClassSymbolTable> classes = symTable.getClasses();
+					Set<String> keys = classes.keySet();
+					
+					for(String key : keys) 	//Iterate over each class
+					{
+						ClassSymbolTable classSymTable = classes.get(key);
+						classSymTable.calculateVarOffsets(); //Store variable offsets in the symbol table
+						
+						Hashtable<String, MethodSymbolTable> methods = classSymTable.getMethods();
+						Set<String> methodKeys = methods.keySet();
+						
+						for(String methodKey : methodKeys)
+						{
+							MethodSymbolTable methSymTable = methods.get(methodKey);
+							methSymTable.assignRegisters(allocator); //Temporary allocation to all method locals
+						}
+					}
+					
 					//Backpatch the IR to resolve labels in jumps to methods
 					BackPatcher backPatch = new BackPatcher(IRList, workList);
 					backPatch.patch();
 						
-					
-					//Print IR
+					//Print IR  -- Temporary, remove later!
 					for(int i = 0; i < IRList.size(); i++)
 					{
 						if(labels.containsKey(IRList.get(i)))
@@ -112,9 +135,10 @@ public class MiniJavaCompiler
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
 						
 					//Write MIPS
-					CodeGenerator gen = new CodeGenerator(IRList, labels, fileName);
+					CodeGenerator gen = new CodeGenerator(IRList, labels, allocator, symTable, fileName);
 					gen.generateMIPS();
 					
+					//Temporary -- remove later!
 					System.out.println("\n Testing Graph");
 					AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
 					asmFG.buildCFG();

@@ -72,4 +72,9 @@ public class SymbolTable implements Scope
 			System.out.println();
 		}
 	}
+	
+	public Hashtable<String, ClassSymbolTable> getClasses()
+	{
+		return classes;
+	}
 }

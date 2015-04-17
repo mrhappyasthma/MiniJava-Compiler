@@ -8,7 +8,7 @@ package codegen;
 import java.io.*;
 import IR.*;
 import helper.Label;
-import symboltable.Variable;
+import symboltable.*;
 import java.util.List;
 import java.util.Hashtable;
 import regalloc.RegisterAllocator;
@@ -19,13 +19,29 @@ public class CodeGenerator
 	private List<Quadruple> IRList;
 	private Hashtable<Quadruple, List<Label>> labels;
 	private RegisterAllocator allocator;
+	private SymbolTable symbolTable;
 	
-	public CodeGenerator(List<Quadruple> list, Hashtable<Quadruple, List<Label>> label, String fileName)
+	public CodeGenerator(List<Quadruple> list, Hashtable<Quadruple, List<Label>> label, RegisterAllocator alloc, Scope symTable, String fileName)
 	{
 		IRList = list;
 		output = fileName;
 		labels = label;
-		allocator = new RegisterAllocator();
+		allocator = alloc;
+		symbolTable = (SymbolTable)symTable;
+	}
+	
+	//Helper function to get size of a class (in bytes)
+	public int getClassSize(String name)
+	{
+		ClassSymbolTable cst = symbolTable.getClass(name);
+		
+		if(cst == null)
+		{
+			System.err.println("Error - Invalid Class Lookup in CodeGenerator!");
+			return -1;
+		}
+		
+		return cst.getSize();
 	}
 	
 	public void generateMIPS()
@@ -136,15 +152,28 @@ public class CodeGenerator
 			}
 			else //Variable arg1
 			{
-				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+				if(arg1.getOffset() == -1)
+				{
+					temp = "move " + resultReg + ", " + arg1.getRegister() + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 			}
 					
 			bw.write(temp, 0, temp.length());
 			
 			if(!result.getType().equals("temporary")) //Variable result
 			{
-				//Store result from resultReg into the variable address
-				temp = "sw " + resultReg + result.getName() + "\n";
+				if(result.getOffset() == -1)
+				{
+					temp = "move " + result.getRegister() + ", " + resultReg + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 				bw.write(temp, 0, temp.length());
 			}
 		}
@@ -184,7 +213,15 @@ public class CodeGenerator
 			}
 			else //Variable arg1
 			{
-				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+				if(arg1.getOffset() == -1)
+				{
+					temp = "move " + resultReg + ", " + arg1.getRegister() + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+					temp = "";
+				}
 			}
 					
 			bw.write(temp, 0, temp.length());
@@ -219,8 +256,14 @@ public class CodeGenerator
 			
 			if(!result.getType().equals("temporary")) //Variable result
 			{
-				//Store result from resultReg into the variable address
-				temp = "sw " + resultReg + result.getName() + "\n";
+				if(result.getOffset() == -1)
+				{
+					temp = "sw " + result.getRegister() + ", " + resultReg + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 				bw.write(temp, 0, temp.length());
 			}
 		}
@@ -247,7 +290,14 @@ public class CodeGenerator
 			}
 			else //Variable
 			{
-				temp = "lw $v0, " + arg1.getName() + "\n";
+				if(arg1.getOffset() == -1)
+				{
+					temp = "move $v0, " + arg1.getRegister() + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 			}
 			
 			bw.write(temp, 0, temp.length());
@@ -271,17 +321,14 @@ public class CodeGenerator
 			Variable arg2 = (Variable)instruction.getArg2();
 			String temp = "";
 			String resultReg;
-			String tempReg;
 				
 			if(result.getType().equals("temporary"))
 			{
 				resultReg = allocator.allocateReg(result.getName());
-				tempReg = allocator.allocateTempReg(0);
 			}
 			else //Variable result
 			{
 				resultReg = allocator.allocateTempReg(0);
-				tempReg = allocator.allocateTempReg(1);
 			}
 					
 			//Handle arg1 -- Store the first parameter in the result register
@@ -295,7 +342,14 @@ public class CodeGenerator
 			}
 			else //Variable arg1
 			{
-				temp = "lw " + resultReg + ", " + arg1.getName() + "\n";
+				if(arg1.getOffset() == -1)
+				{
+					temp = "move " + resultReg + ", " + arg1.getRegister() + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 			}
 					
 			bw.write(temp, 0, temp.length());
@@ -398,20 +452,28 @@ public class CodeGenerator
 			}
 			else //Variable arg2
 			{
-				temp = "lw " + tempReg + ", " + arg2.getName() + "\n";
-				bw.write(temp, 0, temp.length());
+				String varReg = "";
+				
+				if(arg1.getOffset() == -1)
+				{
+					varReg = arg1.getRegister();
+				}
+				else //Class variable
+				{
+					//Todo
+				}
 				
 				if(op.equals("+"))
 				{
-					temp = "add " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
+					temp = "add " + resultReg + ", " + resultReg + ", " + varReg + "\n";
 				}
 				else if(op.equals("-"))
 				{
-					temp = "sub " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
+					temp = "sub " + resultReg + ", " + resultReg + ", " + varReg + "\n";
 				}
 				else if(op.equals("*"))
 				{
-					temp = "mult " + resultReg + ", " + tempReg + "\n";
+					temp = "mult " + resultReg + ", " + varReg + "\n";
 					bw.write(temp, 0, temp.length());
 					
 					temp = "mflo " + resultReg + "\n";
@@ -422,7 +484,7 @@ public class CodeGenerator
 					Label L2 = new Label(false);
 					
 					//If arg 1 < arg2, branch to L1 and store "1" inside resultReg
-					temp = "blt " + resultReg + ", " + tempReg + ", " + L1.getName() + "\n";
+					temp = "blt " + resultReg + ", " + varReg + ", " + L1.getName() + "\n";
 					bw.write(temp, 0, temp.length());
 					
 					//Else fallthrough and store "0" inside resultReg
@@ -442,7 +504,7 @@ public class CodeGenerator
 				}
 				else if(op.equals("&&"))
 				{
-					temp = "and " + resultReg + ", " + resultReg + ", " + tempReg + "\n";
+					temp = "and " + resultReg + ", " + resultReg + ", " + varReg + "\n";
 				}
 			}
 					
@@ -450,8 +512,15 @@ public class CodeGenerator
 				
 			if(!result.getType().equals("temporary")) //Variable result
 			{
-				//Store result from resultReg into the variable address
-				temp = "sw " + resultReg + result.getName() + "\n";
+				if(result.getOffset() == -1)
+				{
+					temp = "move " + result.getRegister() + ", " + resultReg + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+				
 				bw.write(temp, 0, temp.length());
 			}
 		}
@@ -518,20 +587,26 @@ public class CodeGenerator
 				ParameterIR param = (ParameterIR)IRList.get(paramIndex+i);
 				String reg = "$a" + i;
 				
-				String argName = ((Variable)param.getArg1()).getName();
-				String argType = ((Variable)param.getArg1()).getType();
+				Variable arg1 = (Variable)param.getArg1();
 				
-				if(argType.equals("constant")) 
+				if(arg1.getType().equals("constant")) 
                 {              
-                    temp = "li " + reg + ", " + argName + "\n"; 
+                    temp = "li " + reg + ", " + arg1.getName() + "\n"; 
 				}
-                else if(argType.equals("temporary")) 
+                else if(arg1.getType().equals("temporary")) 
                 {              
-                    temp = "move " + reg + ", " + allocator.allocateReg(argName) + "\n"; 
+                    temp = "move " + reg + ", " + allocator.allocateReg(arg1.getName()) + "\n"; 
                 }
 				else //Variable
                 {              
-                    temp = "lw " + reg + ", " + argName + "\n"; 
+                    if(arg1.getOffset() == -1)
+					{
+						temp = "move " + reg + ", " + arg1.getRegister() + "\n";
+					}
+					else //Class variable
+					{
+						//Todo
+					}
                 }
 
 				bw.write(temp, 0, temp.length());
@@ -566,7 +641,14 @@ public class CodeGenerator
 				}
 				else //Variable
 				{
-					temp = "sw $v0, " + result.getName() + "\n";
+					if(result.getOffset() == -1)
+					{
+						temp = "move " + result.getRegister() + ", $v0\n";
+					}
+					else //Class variable
+					{
+						//Todo
+					}
 				}
 				
 				bw.write(temp, 0, temp.length());

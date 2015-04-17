@@ -5,6 +5,7 @@
 
 package symboltable;
 
+import regalloc.*;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -22,7 +23,8 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 		
 		for(int i = 0; i < paramNames.length; i++)
 		{
-			args.put(paramNames[i], new Variable(paramNames[i], paramTypes[i]));
+			String reg = "$a" + i; //Assumes only 4 parameters possible for a method
+			args.put(paramNames[i], new Variable(paramNames[i], paramTypes[i], reg));
 		}
 		
 		this.returnType = returnType;
@@ -70,5 +72,16 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 			return var;
 		else
 			return args.get(name);
+	}
+	
+	public void assignRegisters(RegisterAllocator allocator)
+	{
+		Set<String> keys = vars.keySet();
+		
+		for(String key : keys)
+		{
+			Variable v = vars.get(key);
+			v.setRegister(allocator.allocateReg());
+		}
 	}
 }
