@@ -321,6 +321,7 @@ public class CodeGenerator
 			Variable arg2 = (Variable)instruction.getArg2();
 			String temp = "";
 			String resultReg;
+			int numTempRegs = 0;
 				
 			if(result.getType().equals("temporary"))
 			{
@@ -328,7 +329,8 @@ public class CodeGenerator
 			}
 			else //Variable result
 			{
-				resultReg = allocator.allocateTempReg(0);
+				resultReg = allocator.allocateTempReg(numTempRegs);
+				numTempRegs++;
 			}
 					
 			//Handle arg1 -- Store the first parameter in the result register
@@ -367,10 +369,13 @@ public class CodeGenerator
 				}
 				else if(op.equals("*"))
 				{
-					temp = "li " + resultReg + ", " + arg2.getName() + "\n";
+					String tempReg = allocator.allocateTempReg(numTempRegs);
+					numTempRegs++;
+
+					temp = "li " + tempReg + ", " + arg2.getName() + "\n";
 					bw.write(temp, 0, temp.length());
 					
-					temp = "mult " + resultReg + ", " + resultReg + "\n";
+					temp = "mult " + resultReg + ", " + tempReg + "\n";
 					bw.write(temp, 0, temp.length());
 					
 					temp = "mflo " + resultReg + "\n";
