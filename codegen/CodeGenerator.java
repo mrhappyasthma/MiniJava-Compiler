@@ -312,7 +312,6 @@ public class CodeGenerator
 				bw.write(temp, 0, temp.length());
 				
 				temp = L2.toString() + "\n";
-				bw.write(temp, 0, temp.length());
 			}
 			
 			bw.write(temp, 0, temp.length());
