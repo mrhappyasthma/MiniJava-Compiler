@@ -248,23 +248,21 @@ public class IRVisitor implements Visitor
 	public void visit(If n) 
 	{
 		Label L1 = new Label(true);
-		Label L2 = new Label(true);
-		Label L3 = new Label(false);
+		Label L2 = new Label(false);
 		
 		n.e.accept(this);
 		
-		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L2)); 
-		addLabel(IRList.get(IRList.size()-1), L1);
+		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L1)); 
 		
 		n.s1.accept(this);
-		IRList.add(new UnconditionalJumpIR(L3));
+		IRList.add(new UnconditionalJumpIR(L2));
 		
 		int size = IRList.size();
 		
 		n.s2.accept(this);
 		
-		addLabel(IRList.get(size), L2);
-		addLabel(IRList.get(IRList.size()-1), L3);
+		addLabel(IRList.get(size), L1);
+		addLabel(IRList.get(IRList.size()-1), L2);
 	}
 
 	// Exp e;
@@ -274,10 +272,12 @@ public class IRVisitor implements Visitor
 		Label L1 = new Label(true);
 		Label L2 = new Label(false);
 		
+		int size = IRList.size();
+		
 		n.e.accept(this);
+		addLabel(IRList.get(size), L1);
 		
 		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L2)); 
-		addLabel(IRList.get(IRList.size()-1), L1);
 	
 		n.s.accept(this);
 
