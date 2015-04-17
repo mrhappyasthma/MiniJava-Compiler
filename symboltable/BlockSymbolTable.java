@@ -5,6 +5,8 @@
 
 package symboltable;
 
+import helper.*;
+import java.util.List;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -76,19 +78,19 @@ public class BlockSymbolTable implements Scope
 	
 	public void print(int indentLevel)
 	{
-		Set<String> keys = vars.keySet();
+		List<String> keys = Helper.keysToSortedList(vars.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
 			printIndentation(indentLevel);
-			System.out.print(vars.get(key).getType() + " " + vars.get(key).getName() + ";");
+			System.out.print(vars.get(keys.get(i)).getType() + " " + vars.get(keys.get(i)).getName() + ";");
 		}
 		
-		keys = blocks.keySet();
+		keys = Helper.keysToSortedList(blocks.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
-			blocks.get(key).print(indentLevel+1);
+			blocks.get(keys.get(i)).print(indentLevel+1);
 		}
 	}
 }

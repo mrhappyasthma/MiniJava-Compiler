@@ -5,8 +5,10 @@
 
 package symboltable;
 
+import helper.*;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.List;
 
 public class SymbolTable implements Scope
 {
@@ -64,11 +66,11 @@ public class SymbolTable implements Scope
 	{
 		System.out.println("~~~~~~Symbol Table~~~~~~");
 		
-		Set<String> keys = classes.keySet();
+		List<String> keys = Helper.keysToSortedList(classes.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
-			classes.get(key).print(indentLevel+1);
+			classes.get(keys.get(i)).print(indentLevel+1);
 			System.out.println();
 		}
 	}

@@ -84,19 +84,19 @@ public class MiniJavaCompiler
 					
 					SymbolTable symTable = (SymbolTable)symbolTable;
 					Hashtable <String, ClassSymbolTable> classes = symTable.getClasses();
-					Set<String> keys = classes.keySet();
+					List<String> keys = Helper.keysToSortedList(classes.keySet());;
 					
-					for(String key : keys) 	//Iterate over each class
+					for(int i = 0; i < keys.size(); i++) 	//Iterate over each class
 					{
-						ClassSymbolTable classSymTable = classes.get(key);
+						ClassSymbolTable classSymTable = classes.get(keys.get(i));
 						classSymTable.calculateVarOffsets(); //Store variable offsets in the symbol table
 						
 						Hashtable<String, MethodSymbolTable> methods = classSymTable.getMethods();
-						Set<String> methodKeys = methods.keySet();
+						List<String> methodKeys = Helper.keysToSortedList(methods.keySet());
 						
-						for(String methodKey : methodKeys)
+						for(int j = 0; j < methodKeys.size(); j++)
 						{
-							MethodSymbolTable methSymTable = methods.get(methodKey);
+							MethodSymbolTable methSymTable = methods.get(methodKeys.get(j));
 							methSymTable.assignRegisters(allocator); //Temporary allocation to all method locals
 						}
 					}

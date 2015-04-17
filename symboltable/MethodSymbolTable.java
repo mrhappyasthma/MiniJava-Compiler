@@ -6,13 +6,17 @@
 package symboltable;
 
 import regalloc.*;
+import helper.*;
+import java.util.List;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.ArrayList;
 
 public class MethodSymbolTable extends BlockSymbolTable implements Scope
 {
 	private String name;
 	private Hashtable<String, Variable> args;
+	private String[] argNames;
 	private String returnType;
 	
 	public MethodSymbolTable(Scope parent, String name, String[] paramNames, String[] paramTypes, String returnType)
@@ -20,6 +24,7 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 		super(parent);
 		this.name = name;
 		args = new Hashtable<String, Variable>();
+		argNames = paramNames;
 		
 		for(int i = 0; i < paramNames.length; i++)
 		{
@@ -30,27 +35,20 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 		this.returnType = returnType;
 	}
 	
-	public Object[] getParameters()
+	public Variable[] getParameters()
 	{
-		Object[] params = args.values().toArray();
-		Object[] temp = new Object[params.length-1];
-		System.arraycopy(params, 1, temp, 0, temp.length);
-		reverse(temp);
-		System.arraycopy(temp, 0, params, 1, temp.length);
+		Variable[] params = new Variable[argNames.length];
+		
+		for(int i = 0; i < params.length; i++)
+		{
+			params[i] = args.get(argNames[i]);
+		}
+
 		return params;
 	}
 	
-	private static void reverse(Object[] arr)
+	public int numParameters()
 	{
-		for(int i = 0; i < arr.length / 2; i++)
-		{
-			Object temp = arr[i];
-			arr[i] = arr[arr.length - i - 1];
-			arr[arr.length - i - 1 ] = temp;
-		}
-	}
-
-	public int numParameters(){
             return getParameters().length;
         }
 	
@@ -76,11 +74,11 @@ public class MethodSymbolTable extends BlockSymbolTable implements Scope
 	
 	public void assignRegisters(RegisterAllocator allocator)
 	{
-		Set<String> keys = vars.keySet();
+		List<String> keys = Helper.keysToSortedList(vars.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
-			Variable v = vars.get(key);
+			Variable v = vars.get(keys.get(i));
 			v.setRegister(allocator.allocateReg());
 		}
 	}

@@ -5,8 +5,10 @@
 
 package symboltable;
 
+import java.util.List;
 import java.util.Hashtable;
 import java.util.Set;
+import helper.*;
 
 public class ClassSymbolTable extends BlockSymbolTable implements Scope
 {
@@ -46,11 +48,11 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 		int parentOffset = this.getOffset();
 		int localOffset = 0;
 		
-		Set<String> keys = vars.keySet();
+		List<String> keys = Helper.keysToSortedList(vars.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
-			Variable v = vars.get(key);
+			Variable v = vars.get(keys.get(i));
 			v.setOffset(parentOffset + localOffset);
 			
 			localOffset += 4;
@@ -60,9 +62,9 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	private int calculateSize()
 	{
 		size = 0;
-		Set<String> keys = vars.keySet();
+		List<String> keys = Helper.keysToSortedList(vars.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
 			//All types of variables will be 4 bytes (int, int[], class references, boolean)
 			size += 4;
@@ -138,7 +140,7 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
 		}
 	
-		Object[] parameters = method.getParameters();
+		Variable[] parameters = method.getParameters();
 	
 		if(parameters.length != paramNames.length)
 		{
@@ -147,7 +149,8 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 	
 		for(int i = 0; i < parameters.length; i++)
 		{
-			Variable param = (Variable)parameters[i];
+			Variable param = parameters[i];
+			
 			if(!param.getName().equals(paramNames[i]))
 			{
 				return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
@@ -184,32 +187,32 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 			System.out.print(" extends " + parentClass);
 		}
 		
-		Set<String> keys = vars.keySet();
+		List<String> keys = Helper.keysToSortedList(vars.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
 			printIndentation(indentLevel);
-			System.out.print(vars.get(key).getType() + " " + vars.get(key).getName() + ";");
+			System.out.print(vars.get(keys.get(i)).getType() + " " + vars.get(keys.get(i)).getName() + ";");
 		}
 		
-		keys = methods.keySet();
+		keys = Helper.keysToSortedList(methods.keySet());
 		
-		for(String key : keys)
+		for(int i = 0; i < keys.size(); i++)
 		{
 			printIndentation(indentLevel);
-			System.out.print(" - (" + methods.get(key).getReturnType() + ") " + methods.get(key).getName() + "(");
+			System.out.print(" - (" + methods.get(keys.get(i)).getReturnType() + ") " + methods.get(keys.get(i)).getName() + "(");
 			
-			Object[] params = methods.get(key).getParameters();
+			Variable[] params = methods.get(keys.get(i)).getParameters();
 			
-			for(int i = 0; i < params.length-1; i++)
+			for(int j = 0; j < params.length-1; j++)
 			{
-				Variable param = (Variable) params[i];
+				Variable param = params[j];
 				System.out.print(param.getType() + " " + param.getName() + ", ");
 			}
 			
 			Variable param = (Variable) params[params.length-1];
 			System.out.print(param.getType() + " " + param.getName() + ")");
-			methods.get(key).print(indentLevel+1);
+			methods.get(keys.get(i)).print(indentLevel+1);
 		}
 	}
 	
