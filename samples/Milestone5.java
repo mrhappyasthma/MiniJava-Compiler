@@ -1,6 +1,6 @@
 class Test {
 	public static void main(String[] args) {
-		System.out.println(new Test2().Start());  //Prints 5
+		System.out.println(new Test2().Start());  //Prints 6
 	}
 }
 class Test2 {
@@ -12,9 +12,9 @@ class Test2 {
 		a = 3;
 		b = 1;
 		
-		if(b < a)
+		if(!(a < b))
 		{
-			a = 1;
+			a = 6;
 		}
 		else
 		{
