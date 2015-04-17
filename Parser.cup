@@ -269,6 +269,12 @@ expression ::= expression:e1 AND:a expression:e2
 					RESULT = new IntegerLiteral(x.intValue(), i.getLine(), i.getCol()); 
 			   :}
 			   |
+			   MINUS INTEGER:i
+			   {: 
+					Integer x = (Integer) i.getValue();
+					RESULT = new IntegerLiteral(x.intValue()*-1, i.getLine(), i.getCol()); 
+			   :}
+			   |
 			   TRUE
 			   {: RESULT = new True(); :}
 			   |

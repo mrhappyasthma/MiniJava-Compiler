@@ -20,7 +20,7 @@ InputCharacter 				= [^\r\n]
 WhiteSpace 					= {LineTerminator} | [ \t\f]
 EndOfLineComment 			= "//" {InputCharacter}* {LineTerminator}?
 TraditionalComment 			= "/*" [^*] ~"*/" | "/*" "*"+ "/"
-IntegerLiteral 				= 0 | -?[1-9][0-9]*
+IntegerLiteral 				= 0 | [1-9][0-9]*
 Identifier 					= [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
