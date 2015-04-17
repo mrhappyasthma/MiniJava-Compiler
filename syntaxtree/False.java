@@ -22,6 +22,6 @@ public class False extends Exp
   
   public Variable generateTAC()
   {
-	  return new Variable("false", "constant");
+	  return new Variable("0", "constant");
   }
 }

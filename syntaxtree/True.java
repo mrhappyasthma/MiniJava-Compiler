@@ -23,6 +23,6 @@ public class True extends Exp
   
   public Variable generateTAC()
   {
-	  return new Variable("true", "constant");
+	  return new Variable("1", "constant");
   }
 }
