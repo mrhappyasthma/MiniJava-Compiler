@@ -6,6 +6,7 @@ import helper.Label;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import symboltable.Variable;
 
 public class AssemFlowGraph{
         List<Quadruple> instr;
@@ -100,7 +101,18 @@ public class AssemFlowGraph{
 		Node n = graph.get(i);
 		System.out.print(n.getNum()+ " ");
                 System.out.println(n.getInstr().toString());
-                List<Node> listN = n.nextNode();
+		if(n.getDef()!=null){		
+                	System.out.println("Def "+ n.getDef().getName());
+                }
+		if(!n.getUse().isEmpty()){
+			   List<Variable> listUse = n.getUse();
+                 	   System.out.println("Uses:");
+			   for (int k = 0; k < listUse.size(); k++) {
+				System.out.println(listUse.get(k).getName());
+                    
+                    }
+                }
+		List<Node> listN = n.nextNode();
                 if(listN.size()!=0){
 		    
 	            System.out.println("Nexts:");
