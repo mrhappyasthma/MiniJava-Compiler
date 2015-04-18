@@ -105,6 +105,14 @@ public class CodeGenerator
 				{
 					handleConditionalJump(q, bw);
 				}
+				else if(q instanceof NewArrayIR)
+				{
+					handleNewArray(q, bw);
+				}
+				else if(q instanceof LengthIR)
+				{
+					handleArrayLength(q, bw);
+				}
 				
 				//Print any labels after
 				if(labelList != null)
@@ -126,6 +134,183 @@ public class CodeGenerator
 				bw.close();
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleArrayLength(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			Variable arg1 = (Variable)instruction.getArg1(); //Holds the address
+			Variable result = (Variable)instruction.getResult();
+			String temp;
+			
+			if(result.getType().equals("temporary"))
+			{
+				if(arg1.getType().equals("temporary"))
+				{
+					temp = "lw " + allocator.allocateReg(result.getName()) + ", 0(" + allocator.allocateReg(arg1.getName()) + ")\n";
+				}
+				else //Variable
+				{
+					if(arg1.getOffset() == -1)
+					{
+						temp = "lw " + allocator.allocateReg(result.getName()) + ", 0(" + arg1.getRegister() + ")\n";
+					}
+					else //Class variable
+					{
+						//Todo
+						temp = "";
+					}
+				}
+			}
+			else //Variable arg1
+			{
+				if(result.getOffset() == -1)
+				{
+					if(arg1.getType().equals("temporary"))
+					{
+						temp = "lw " + result.getRegister() + ", 0(" + allocator.allocateReg(arg1.getName()) + ")\n";
+					}
+					else //Variable
+					{
+						if(arg1.getOffset() == -1)
+						{
+							temp = "lw " + result.getRegister() + ", 0(" + arg1.getRegister() + ")\n";
+						}
+						else //Class variable
+						{
+							//Todo
+							temp = "";
+						}
+					}
+				}
+				else //Class variable
+				{
+					//Todo
+					temp = "";
+				}
+			}
+			
+			bw.write(temp, 0, temp.length());
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleNewArray(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			//Notes:
+			//		$a0 - Holds the number of bytes
+			//		$v0 - On return, holds the memory address (with address 0 holding the 4 byte length)
+			
+			String type = (String)instruction.getArg1();
+			Variable arg2 = (Variable)instruction.getArg2();
+			Variable result = (Variable)instruction.getResult();
+			String temp;
+		
+			//Handle arg2 -- The number of elements/size
+			if(arg2.getType().equals("constant"))
+			{
+				temp = "li $a0, " + arg2.getName() + "\n";
+			}
+			else if(arg2.getType().equals("temporary"))
+			{
+				temp = "move $a0, " + allocator.allocateReg(arg2.getName()) + "\n";
+			}
+			else //Variable arg1
+			{
+				if(arg2.getOffset() == -1)
+				{
+					temp = "move $a0, " + arg2.getRegister() + "\n";
+				}
+				else //Class variable
+				{
+					//Todo
+					temp = "";
+				}
+			}
+				
+			bw.write(temp, 0, temp.length());
+			
+			if(type.equals("int")) //Only "int" for MiniJava
+			{
+				//Shift left by 2 (multiply by 4 bytes) for each "int" in size
+				temp = "sll $a0, $a0, 2\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Store $ra on stack
+			temp = "addi $sp, $sp, -20\n";  //Make enough space on stack to save all reg
+			bw.write(temp, 0, temp.length());
+			temp = "sw $ra, 16($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $a0
+			temp = "sw $a0, 12($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $t0-$t1 on the stack
+			for(int i = 0; i < 2; i++)
+			{
+				temp = "sw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Store $v0 on the stack
+			temp = "sw $v0, 0($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Call the function of "_new_array"
+			temp = "jal _new_array\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $t0-$t1 from the stack
+			for(int i = 1; i >= 0; i--)
+			{
+				temp = "lw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Restore $a0 from the stack
+			temp = "lw $a0, 12($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			if(result.getType().equals("temporary"))
+			{
+				temp = "move " + allocator.allocateReg(result.getName()) + ", $v0\n";
+			}
+			else //Variable
+			{
+				if(result.getOffset() == -1)
+				{
+					temp = "move " + result.getRegister() + ", $v0\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+				
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $v0
+			temp = "lw $v0, 0($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $ra from the stack
+			temp = "lw $ra, 16($sp)\n";
+			bw.write(temp, 0, temp.length());
+			temp = "addi $sp, $sp, 20\n";    //Cleanup space on stack from all saved reg
+			bw.write(temp, 0, temp.length());
+		}
+		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -614,10 +799,17 @@ public class CodeGenerator
 			}
 			
 			//Store $ra on stack
-			String temp = "addi $sp, $sp, -68\n";  //Make enough space on stack to save all reg
+			String temp = "addi $sp, $sp, -100\n";  //Make enough space on stack to save all reg
 			bw.write(temp, 0, temp.length());
-			temp = "sw $ra, 64($sp)\n";
+			temp = "sw $ra, 96($sp)\n";
 			bw.write(temp, 0, temp.length());
+			
+			//Store $s0-$s7 on stack
+			for(int i = 0; i < 8; i++)
+			{
+				temp = "sw $s" + i + ", " + (92 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
 			
 			//Store $a0 - $a3 on stack
 			for(int i = 0; i < 4; i++)
@@ -721,6 +913,13 @@ public class CodeGenerator
 				bw.write(temp, 0, temp.length());
 			}
 			
+			//Restore $s0-$s7 on the stack
+			for(int i = 7; i >= 0; i--)
+			{
+				temp = "lw $s" + i + ", " + (92 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
 			//Move return value into the result register
 			if(!function.equals("_system_out_println"))  //println is the only 'void' function in minijava
 			{
@@ -753,9 +952,9 @@ public class CodeGenerator
 			}
 			
 			//Restore $ra from the stack
-			temp = "lw $ra, 64($sp)\n";
+			temp = "lw $ra, 96($sp)\n";
 			bw.write(temp, 0, temp.length());
-			temp = "addi $sp, $sp, 68\n";    //Cleanup space on stack from all saved reg
+			temp = "addi $sp, $sp, 100\n";    //Cleanup space on stack from all saved reg
 			bw.write(temp, 0, temp.length());
 		}
 		catch (IOException e)
