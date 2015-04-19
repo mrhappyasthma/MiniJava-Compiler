@@ -4,6 +4,7 @@ import IR.Quadruple;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.BitSet;
 import symboltable.Variable;
 
 
@@ -47,34 +48,63 @@ public class Node {
     public int getNum(){
         return num;
     }    
-    public Variable getDef(){
-        if(instr.getResult()!=null){
-            if( (instr.getResult()) instanceof Variable){
-                return (Variable) instr.getResult();
+
+    public boolean isMove(){
+        if(instr.getArg2()==null){
+            Variable res = (Variable)instr.getResult();
+            Variable arg1 = (Variable)instr.getArg1();
+            if(arg1.getName().equals(res.getName())){
+                return true;
             }
         }
-        return null;
+        return false;
     }
-    
-    public List<Variable> getUse(){
-        List<Variable> listVar = new ArrayList<Variable>();
-        if(instr.getArg1()!=null){
-            if((instr.getArg1()) instanceof Variable){
+
+
+        public BitSet calculateDef(List<Variable> listVar) {
+        BitSet bitDef = new BitSet(listVar.size());
+        if (instr.getResult() != null) {
+            if ((instr.getResult()) instanceof Variable) {
+                for (int i = 0; i < listVar.size(); i++) {
+                    if (listVar.get(i).getName().equals(((Variable) instr.getResult()).getName())) {
+                        bitDef.set(i);
+                    }
+                }
+            }
+        }
+        return bitDef;
+    }
+	
+
+    public BitSet calculateUse(List<Variable> listVar) {
+        BitSet bitUse = new BitSet(listVar.size());
+        if (instr.getArg1() != null) {
+            if ((instr.getArg1()) instanceof Variable) {
                 Variable arg1 = (Variable) instr.getArg1();
-                if(!arg1.getType().equals("constant")){
-                    listVar.add(arg1);
+                if (!arg1.getType().equals("constant")) {
+                    for (int i = 0; i < listVar.size(); i++) {
+                        if ( arg1.getName().equals(listVar.get(i).getName())) {
+                            bitUse.set(i);
+                        }
+                    }
+
                 }
             }
         }
-        if(instr.getArg2()!=null){
-            if((instr.getArg2()) instanceof Variable){
+        if (instr.getArg2() != null) {
+            if ((instr.getArg2()) instanceof Variable) {
                 Variable arg2 = (Variable) instr.getArg1();
-                if(!arg2.getType().equals("constant")){
-                    listVar.add(arg2);
+                if (!arg2.getType().equals("constant")) {
+                    for (int i = 0; i < listVar.size(); i++) {
+                        if ( arg2.getName().equals(listVar.get(i).getName())) {
+                            bitUse.set(i);
+                        }
+                    }
                 }
             }
         }
-        return listVar;
+        return bitUse;
+
     }   
     
 
