@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import symboltable.Variable;
+import regalloc.Liveness;
 
 public class AssemFlowGraph{
         List<Quadruple> instr;
@@ -15,6 +16,7 @@ public class AssemFlowGraph{
         //hashtable that keeps the Node of the label
         Hashtable<String,Integer> labelNode;
         //int countInstr;
+
 	public AssemFlowGraph(List<Quadruple> i ,Hashtable<Quadruple, List<Label>> l){
             labels = l;
             instr = i;
@@ -23,7 +25,8 @@ public class AssemFlowGraph{
             //countInstr=0;
             
         }
-        public Node buildCFG(){
+
+        public List<Node> buildCFG(){
             buildNodes();
             for (int i = 0; i < graph.size(); i++) {
                 Node n = graph.get(i);
@@ -52,8 +55,7 @@ public class AssemFlowGraph{
                 }
                 
             }
-            //return the first node
-            return graph.get(0);
+            return graph;
         }
         public void buildNodes(){
             Node n = null;
@@ -90,28 +92,15 @@ public class AssemFlowGraph{
                 }
                 graph.add(n);
             }
-	    System.out.println("\nGraph without flow:");
-            printGraph();
-	    System.out.println();
         }
 	 public void printGraph(){
-            
+	    Liveness liv = new Liveness(graph);
+            liv.calculateLive();	            
             for (int i = 0; i < graph.size(); i++) {
                
 		Node n = graph.get(i);
 		System.out.print(n.getNum()+ " ");
                 System.out.println(n.getInstr().toString());
-		if(n.getDef()!=null){		
-                	System.out.println("Def "+ n.getDef().getName());
-                }
-		if(!n.getUse().isEmpty()){
-			   List<Variable> listUse = n.getUse();
-                 	   System.out.println("Uses:");
-			   for (int k = 0; k < listUse.size(); k++) {
-				System.out.println(listUse.get(k).getName());
-                    
-                    }
-                }
 		List<Node> listN = n.nextNode();
                 if(listN.size()!=0){
 		    
