@@ -814,7 +814,7 @@ public class TypeCheckingVisitor implements TypeVisitor
 	
     for ( int i = 0; i < n.el.size(); i++ ) 
 	{
-        Type t = n.el.elementAt(i).accept(this);
+        Type t = n.el.elementAt(n.el.size()-i-1).accept(this);
 		
 		if(!numParamError)
 		{
@@ -822,6 +822,9 @@ public class TypeCheckingVisitor implements TypeVisitor
 
 			if(!compareTypes(t, strToType(v.getType())))
 			{
+				if(t instanceof BooleanType)
+					System.out.println("type == bool");
+				
 				errorDetected = true;
 				System.out.println("Call of method " + methName + " does not match its declared signature at line " + n.lineNum + ", character " + n.charNum);
 				break;
