@@ -82,7 +82,7 @@ public class RegisterAllocator
 					
 			if(offset < 10)
 			{
-				regTemp = "$t"+qtdTemp;
+				regTemp = "$t"+offset;
 			}
 			else
 			{
@@ -92,4 +92,3 @@ public class RegisterAllocator
             return regTemp;
 		}
 }
-
