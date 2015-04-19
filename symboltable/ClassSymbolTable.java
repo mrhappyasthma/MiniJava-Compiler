@@ -132,19 +132,19 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 		
 		if(method == null)
 		{
-			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType);
 		}
 		
 		if(!method.getReturnType().equals(returnType))
 		{
-			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType);
 		}
 	
 		Variable[] parameters = method.getParameters();
 	
 		if(parameters.length != paramNames.length)
 		{
-			return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+			return lookupParentsMethod(name, paramNames, paramTypes, returnType);
 		}
 	
 		for(int i = 0; i < parameters.length; i++)
@@ -153,12 +153,12 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 			
 			if(!param.getName().equals(paramNames[i]))
 			{
-				return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+				return lookupParentsMethod(name, paramNames, paramTypes, returnType);
 			}
 			
 			if(!param.getType().equals(paramTypes[i]))
 			{
-				return lookupParentsMethod(name, paramNames, paramTypes, returnType) | false;
+				return lookupParentsMethod(name, paramNames, paramTypes, returnType);
 			}
 		}
 		
@@ -167,7 +167,17 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
 
         public MethodSymbolTable getMethod(String name){
             if(isMethod(name)){
-                return (MethodSymbolTable)methods.get(name);
+				MethodSymbolTable mst = (MethodSymbolTable)methods.get(name);
+				
+				if(mst != null){
+					return mst;
+				}
+				else if (parentClass != null){
+					return ((ClassSymbolTable)parent.enterScope(parentClass)).getMethod(name);
+				}
+				else{
+					return null;
+				}
             }
             else{
                 return null;
@@ -175,7 +185,16 @@ public class ClassSymbolTable extends BlockSymbolTable implements Scope
         }
         
         public boolean isMethod(String name){
-            return methods.containsKey(name);
+            if(methods.containsKey(name) == false){
+				if(parentClass != null){	
+					return ((ClassSymbolTable)parent.enterScope(parentClass)).isMethod(name);
+				}
+				else{
+					return false;
+				}
+			}
+			
+			return true;
         }
 	
 	public void print(int indentLevel)
