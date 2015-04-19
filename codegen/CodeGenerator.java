@@ -121,6 +121,10 @@ public class CodeGenerator
 				{
 					handleArrayAssignment(q, bw);
 				}
+				else if(q instanceof NewIR)
+				{
+					handleObjectCreation(q, bw);
+				}
 				
 				//Print any labels after
 				if(labelList != null)
@@ -142,6 +146,95 @@ public class CodeGenerator
 				bw.close();
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleObjectCreation(Quadruple instruction, BufferedWriter bw)
+	{
+		try
+		{
+			//Notes:
+			//		$a0 - Holds the number of bytes
+			//		$v0 - On return, holds the memory address (with address 0 holding the 4 byte length)
+			
+			String className = (String)instruction.getArg1();
+			Variable result = (Variable)instruction.getResult();
+			
+			ClassSymbolTable cst = symbolTable.getClass(className);
+			int classSize = cst.getSize(); //Get size of class in bytes
+			
+			//Store $ra on stack
+			String temp = "addi $sp, $sp, -20\n";  //Make enough space on stack to save all reg
+			bw.write(temp, 0, temp.length());
+			temp = "sw $ra, 16($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $a0
+			temp = "sw $a0, 12($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $t0-$t1 on the stack
+			for(int i = 0; i < 2; i++)
+			{
+				temp = "sw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Store $v0 on the stack
+			temp = "sw $v0, 0($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store size into $a0
+			temp = "li $a0, " + classSize + "\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Call the function of "_new_array"
+			temp = "jal _new_object\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $t0-$t1 from the stack
+			for(int i = 1; i >= 0; i--)
+			{
+				temp = "lw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Restore $a0 from the stack
+			temp = "lw $a0, 12($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			if(result.getType().equals("temporary"))
+			{
+				temp = "move " + allocator.allocateReg(result.getName()) + ", $v0\n";
+			}
+			else //Variable
+			{
+				if(result.getOffset() == -1)
+				{
+					temp = "move " + result.getRegister() + ", $v0\n";
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+				
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $v0
+			temp = "lw $v0, 0($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Restore $ra from the stack
+			temp = "lw $ra, 16($sp)\n";
+			bw.write(temp, 0, temp.length());
+			temp = "addi $sp, $sp, 20\n";    //Cleanup space on stack from all saved reg
+			bw.write(temp, 0, temp.length());
+			
+		}
+		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -610,7 +703,28 @@ public class CodeGenerator
 			Variable arg2 = (Variable)instruction.getArg2();
 			Variable result = (Variable)instruction.getResult();
 			String temp;
-		
+			
+			//Store $ra on stack
+			temp = "addi $sp, $sp, -20\n";  //Make enough space on stack to save all reg
+			bw.write(temp, 0, temp.length());
+			temp = "sw $ra, 16($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $a0
+			temp = "sw $a0, 12($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
+			//Store $t0-$t1 on the stack
+			for(int i = 0; i < 2; i++)
+			{
+				temp = "sw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
+				bw.write(temp, 0, temp.length());
+			}
+			
+			//Store $v0 on the stack
+			temp = "sw $v0, 0($sp)\n";
+			bw.write(temp, 0, temp.length());
+			
 			//Handle arg2 -- The number of elements/size
 			if(arg2.getType().equals("constant"))
 			{
@@ -641,27 +755,6 @@ public class CodeGenerator
 				temp = "sll $a0, $a0, 2\n";
 				bw.write(temp, 0, temp.length());
 			}
-			
-			//Store $ra on stack
-			temp = "addi $sp, $sp, -20\n";  //Make enough space on stack to save all reg
-			bw.write(temp, 0, temp.length());
-			temp = "sw $ra, 16($sp)\n";
-			bw.write(temp, 0, temp.length());
-			
-			//Store $a0
-			temp = "sw $a0, 12($sp)\n";
-			bw.write(temp, 0, temp.length());
-			
-			//Store $t0-$t1 on the stack
-			for(int i = 0; i < 2; i++)
-			{
-				temp = "sw $t" + i + ", " + (8 - (4*i)) + "($sp)\n";
-				bw.write(temp, 0, temp.length());
-			}
-			
-			//Store $v0 on the stack
-			temp = "sw $v0, 0($sp)\n";
-			bw.write(temp, 0, temp.length());
 			
 			//Call the function of "_new_array"
 			temp = "jal _new_array\n";
