@@ -55,7 +55,7 @@ precedence left PLUS, MINUS;
 precedence left STAR;
 precedence right NEW;
 precedence right EXCLAMATION;
-precedence left PERIOD;
+precedence left PERIOD, LEFTBRACKET, RIGHTBRACKET, LEFTPAREN, RIGHTPAREN;
 
 /* Start Symbol */
 start with program;
