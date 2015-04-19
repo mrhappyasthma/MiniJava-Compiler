@@ -113,6 +113,14 @@ public class CodeGenerator
 				{
 					handleArrayLength(q, bw);
 				}
+				else if(q instanceof IndexedAssignmentIR1)
+				{
+					handleArrayIndex(q, bw);
+				}
+				else if(q instanceof IndexedAssignmentIR2)
+				{
+					handleArrayAssignment(q, bw);
+				}
 				
 				//Print any labels after
 				if(labelList != null)
@@ -134,6 +142,394 @@ public class CodeGenerator
 				bw.close();
 		}
 		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleArrayIndex(Quadruple instruction, BufferedWriter bw)
+	{
+		//x := y[i]
+		try
+		{
+			Variable arg1 = (Variable)instruction.getArg1();
+			Variable arg2 = (Variable)instruction.getArg2();
+			Variable result = (Variable)instruction.getResult();
+			String temp = "";
+			String arg1Reg = "";
+			String arg2Reg = "";
+			
+			//Handle arg2 -- Get the index and multiply by 4 (shift by 2) -- then add 4 (for length offset)
+			if(arg2.getType().equals("temporary"))
+			{
+				arg2Reg = allocator.allocateReg(arg2.getName());
+				
+				if(arg1.getType().equals("int[]"))
+				{
+					temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+					bw.write(temp, 0, temp.length());
+				}
+				
+				temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+				bw.write(temp, 0, temp.length());
+			}
+			else if(arg2.getType().equals("constant"))
+			{
+				arg2Reg = "$zero"; //Handle this later as part of the ofset
+			}
+			else //Variable arg2
+			{
+				if(arg2.getOffset() == -1)
+				{
+					arg2Reg = arg2.getRegister();
+					
+					if(arg1.getType().equals("int[]"))
+					{
+						temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+					
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+					bw.write(temp, 0, temp.length());
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+			
+			//Handle arg1 -- Address of array
+			if(arg1.getType().equals("temporary"))
+			{
+				temp = "add " + allocator.allocateReg(arg1.getName()) + ", " + allocator.allocateReg(arg1.getName()) + ", " + arg2Reg + "\n";
+				bw.write(temp, 0, temp.length());
+				
+				arg1Reg = allocator.allocateReg(arg1.getName());
+			}
+			else //Variable arg1
+			{
+				if(arg1.getOffset() == -1)
+				{
+					temp = "add " + arg1.getRegister() + ", " + arg1.getRegister() + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					arg1Reg = arg1.getRegister();
+				}
+				else //Class Variable
+				{
+					//Todo
+				}
+			}
+		
+			//Load value at address from arg1 into result
+			if(result.getType().equals("temporary"))
+			{
+				if(arg2.getType().equals("constant"))
+				{
+					//Calculate offset
+					int offset = Integer.parseInt(arg2.getName());
+					
+					if(arg1.getType().equals("int[]"))
+					{
+						offset = offset * 4; //Multiply by 4 because it is an int[]
+					}
+					offset += 4; //Add 4 to offset the length
+					temp =  "lw " + allocator.allocateReg(result.getName()) + ", " + offset + "(" + arg1Reg + ")\n";
+				}
+				else
+				{
+					temp =  "lw " + allocator.allocateReg(result.getName()) + ", 0(" + arg1Reg + ")\n";
+				}
+			}
+			else //Variable result
+			{
+				if(result.getOffset() == -1)
+				{
+					if(arg2.getType().equals("constant"))
+					{
+						//Calculate offset
+						int offset = Integer.parseInt(arg2.getName());
+						
+						if(arg1.getType().equals("int[]"))
+						{
+							offset = offset * 4; //Multiply by 4 because it is an int[]
+						}
+						offset += 4; //Add 4 to offset the length
+						temp =  "lw " + result.getRegister() + ", " + offset + "(" + arg1Reg + ")\n";
+					}
+					else
+					{
+						temp =  "lw " + result.getRegister() + ", 0(" + arg1Reg + ")\n";
+					}
+				}
+				else
+				{
+					//Todo
+					temp = "";
+				}
+			}
+			
+			bw.write(temp, 0, temp.length());
+			
+			//Subtract arg2 from arg1 to return it to the original value
+			if(arg1.getType().equals("temporary"))
+			{
+				temp = "sub " + arg1Reg + ", " + arg1Reg + ", " + arg2Reg + "\n";
+				bw.write(temp, 0, temp.length());
+			}
+			else //Variable arg1
+			{
+				if(arg1.getOffset() == -1)
+				{
+					temp = "sub " + arg1Reg + ", " + arg1Reg + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
+				}
+				else //Class Variable
+				{
+					//Todo
+				}
+			}
+			
+			//Return arg2 to normal - Subtract 4 (for length) and then right shift by 2 (divide by 4)
+			if(arg2.getType().equals("temporary"))
+			{	
+				temp = "addi " + arg2Reg + ", " + arg2Reg + ", -4\n";
+				bw.write(temp, 0, temp.length());
+				
+				if(arg1.getType().equals("int[]"))
+				{
+					temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
+					bw.write(temp, 0, temp.length());
+				}
+			}
+			else if(!arg2.getType().equals("constant")) //Variable arg2
+			{
+				if(arg2.getOffset() == -1)
+				{
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", -4\n";
+					bw.write(temp, 0, temp.length());
+					
+					if(arg1.getType().equals("int[]"))
+					{
+						temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleArrayAssignment(Quadruple instruction, BufferedWriter bw)
+	{
+		//y[i] := x
+		try
+		{
+			Variable arg1 = (Variable)instruction.getArg1();
+			Variable arg2 = (Variable)instruction.getArg2();
+			Variable result = (Variable)instruction.getResult();
+			String temp = "";
+			String resultReg = "";
+			String arg2Reg = "";
+			
+			//Handle arg2 -- Get the index and multiply by 4 (shift by 2) -- then add 4 (for length offset)
+			if(arg2.getType().equals("temporary"))
+			{
+				arg2Reg = allocator.allocateReg(arg2.getName());
+				
+				if(result.getType().equals("int[]"))
+				{
+					temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+					bw.write(temp, 0, temp.length());
+				}
+				
+				temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+				bw.write(temp, 0, temp.length());
+			}
+			else if(arg2.getType().equals("constant"))
+			{
+				arg2Reg = "$zero"; //Handle this later as part of the ofset
+			}
+			else //Variable arg2
+			{
+				if(arg2.getOffset() == -1)
+				{
+					arg2Reg = arg2.getRegister();
+					
+					if(result.getType().equals("int[]"))
+					{
+						temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+					
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+					bw.write(temp, 0, temp.length());
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+			
+			//Handle result -- Address of array
+			if(result.getType().equals("temporary"))
+			{
+				temp = "add " + allocator.allocateReg(result.getName()) + ", " + allocator.allocateReg(result.getName()) + ", " + arg2Reg + "\n";
+				bw.write(temp, 0, temp.length());
+				
+				resultReg = allocator.allocateReg(result.getName());
+			}
+			else //Variable result
+			{
+				if(result.getOffset() == -1)
+				{
+					temp = "add " + result.getRegister() + ", " + result.getRegister() + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					resultReg = result.getRegister();
+				}
+				else //Class Variable
+				{
+					//Todo
+				}
+			}
+		
+			//Store value from arg1 result address
+			if(arg1.getType().equals("temporary"))
+			{
+				if(arg2.getType().equals("constant"))
+				{
+					//Calculate offset
+					int offset = Integer.parseInt(arg2.getName());
+					
+					if(result.getType().equals("int[]"))
+					{
+						offset = offset * 4; //Multiply by 4 because it is an int[]
+					}
+					offset += 4; //Add 4 to offset the length
+					temp =  "sw " + allocator.allocateReg(arg1.getName()) + ", " + offset + "(" + resultReg + ")\n";
+				}
+				else
+				{
+					temp =  "sw " + allocator.allocateReg(arg1.getName()) + ", 0(" + resultReg + ")\n";
+				}
+			}
+			else if(arg1.getType().equals("constant"))
+			{
+				String tempReg = allocator.allocateTempReg(0);
+				
+				if(arg2.getType().equals("constant"))
+				{	
+					//Calculate offset
+					int offset = Integer.parseInt(arg2.getName());
+					
+					if(result.getType().equals("int[]"))
+					{
+						offset = offset * 4; //Multiply by 4 because it is an int[]
+					}
+					offset += 4; //Add 4 to offset the length
+					
+					temp = "li " + tempReg + ", " + arg1.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp =  "sw " + tempReg + ", " + offset + "(" + resultReg + ")\n";
+				}
+				else
+				{
+					temp = "li " + tempReg + ", " + arg1.getName() + "\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp =  "sw " + tempReg + ", 0(" + resultReg + ")\n";
+				}
+			}
+			else //Variable result
+			{
+				if(arg1.getOffset() == -1)
+				{
+					if(arg2.getType().equals("constant"))
+					{
+						//Calculate offset
+						int offset = Integer.parseInt(arg2.getName());
+						
+						if(result.getType().equals("int[]"))
+						{
+							offset = offset * 4; //Multiply by 4 because it is an int[]
+						}
+						offset += 4; //Add 4 to offset the length
+						temp =  "sw " + arg1.getRegister() + ", " + offset + "(" + resultReg + ")\n";
+					}
+					else
+					{
+						temp =  "sw " + arg1.getRegister() + ", 0(" + resultReg + ")\n";
+					}
+				}
+				else //Variable arg1
+				{
+					//Todo
+					temp = "";
+				}
+			}
+			
+			bw.write(temp, 0, temp.length());
+			
+			//Subtract arg2 from result to return it to the original value
+			if(result.getType().equals("temporary"))
+			{
+				temp = "sub " + resultReg + ", " + resultReg + ", " + arg2Reg + "\n";
+				bw.write(temp, 0, temp.length());
+			}
+			else //Variable arg1
+			{
+				if(result.getOffset() == -1)
+				{
+					temp = "sub " + resultReg + ", " + resultReg + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
+				}
+				else //Class Variable
+				{
+					//Todo
+				}
+			}
+			
+			//Return arg2 to normal - Subtract 4 (for length) and then right shift by 2 (divide by 4)
+			if(arg2.getType().equals("temporary"))
+			{	
+				temp = "addi " + arg2Reg + ", " + arg2Reg + ", -4\n";
+				bw.write(temp, 0, temp.length());
+				
+				if(result.getType().equals("int[]"))
+				{
+					temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
+					bw.write(temp, 0, temp.length());
+				}
+			}
+			else if(!arg2.getType().equals("constant")) //Variable arg2
+			{
+				if(arg2.getOffset() == -1)
+				{
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", -4\n";
+					bw.write(temp, 0, temp.length());
+					
+					if(result.getType().equals("int[]"))
+					{
+						temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+				}
+				else //Class variable
+				{
+					//Todo
+				}
+			}
+		}
+		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
