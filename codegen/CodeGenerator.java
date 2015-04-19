@@ -1184,7 +1184,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "lw " + resultReg + ", " + arg1.getOffset() + "($a0)\n";
 				}
 			}
 					
@@ -1299,7 +1299,11 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					varReg = allocator.allocateTempReg(numTempRegs);
+					numTempRegs++;
+					
+					temp = "lw " + varReg + ", " + arg2.getOffset() + "($a0)\n";
+					bw.write(temp, 0, temp.length());
 				}
 				
 				if(op.equals("+"))
@@ -1357,7 +1361,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
 				}
 				
 				bw.write(temp, 0, temp.length());
