@@ -217,7 +217,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "lw $v0, " + result.getOffset() + "($a0)\n";
 				}
 			}
 				
@@ -287,7 +287,18 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					arg2Reg = allocator.allocateTempReg(0);
+					
+					temp = "lw " + arg2Reg + ", " + arg2.getOffset() + "($a0)\n";
+					
+					if(arg1.getType().equals("int[]"))
+					{
+						temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+					
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+					bw.write(temp, 0, temp.length());
 				}
 			}
 			
@@ -310,7 +321,13 @@ public class CodeGenerator
 				}
 				else //Class Variable
 				{
-					//Todo
+					arg1Reg = allocator.allocateTempReg(1);
+					
+					temp = "lw " + arg1Reg + ", " + arg1.getOffset() + "($a0)\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "add " + arg1Reg + ", " + arg1Reg + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
 				}
 			}
 		
@@ -357,8 +374,33 @@ public class CodeGenerator
 				}
 				else
 				{
-					//Todo
-					temp = "";
+					if(arg2.getType().equals("constant"))
+					{
+						//Calculate offset
+						int offset = Integer.parseInt(arg2.getName());
+						
+						if(arg1.getType().equals("int[]"))
+						{
+							offset = offset * 4; //Multiply by 4 because it is an int[]
+						}
+						offset += 4; //Add 4 to offset the length
+						
+						String tempReg = allocator.allocateTempReg(0);
+						
+						temp =  "lw " + tempReg + ", " + offset + "(" + arg1Reg + ")\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp = "sw " + tempReg + ", " + result.getOffset() + "($a0)\n";
+					}
+					else
+					{
+						String tempReg = allocator.allocateTempReg(0);
+						
+						temp =  "lw " + tempReg + ", 0(" + arg1Reg + ")\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp = "sw " + tempReg + ", " + result.getOffset() + "($a0)\n";
+					}
 				}
 			}
 			
@@ -376,10 +418,6 @@ public class CodeGenerator
 				{
 					temp = "sub " + arg1Reg + ", " + arg1Reg + ", " + arg2Reg + "\n";
 					bw.write(temp, 0, temp.length());
-				}
-				else //Class Variable
-				{
-					//Todo
 				}
 			}
 			
@@ -407,10 +445,6 @@ public class CodeGenerator
 						temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
 						bw.write(temp, 0, temp.length());
 					}
-				}
-				else //Class variable
-				{
-					//Todo
 				}
 			}
 		}
@@ -467,7 +501,19 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					arg2Reg = allocator.allocateTempReg(0);
+					
+					temp = "lw " + arg2Reg + ", " + arg2.getOffset() + "($a0)\n";
+					bw.write(temp, 0, temp.length());
+					
+					if(result.getType().equals("int[]"))
+					{
+						temp = "sll " + arg2Reg + ", " + arg2Reg + ", 2\n";
+						bw.write(temp, 0, temp.length());
+					}
+					
+					temp = "addi " + arg2Reg + ", " + arg2Reg + ", 4\n";
+					bw.write(temp, 0, temp.length());
 				}
 			}
 			
@@ -490,7 +536,13 @@ public class CodeGenerator
 				}
 				else //Class Variable
 				{
-					//Todo
+					resultReg = allocator.allocateTempReg(1);
+					
+					temp = "lw " + resultReg + ", " + result.getOffset() + "($a0)\n";
+					bw.write(temp, 0, temp.length());
+					
+					temp = "add " + resultReg + ", " + resultReg + ", " + arg2Reg + "\n";
+					bw.write(temp, 0, temp.length());
 				}
 			}
 		
@@ -542,7 +594,7 @@ public class CodeGenerator
 					temp =  "sw " + tempReg + ", 0(" + resultReg + ")\n";
 				}
 			}
-			else //Variable result
+			else //Variable arg1
 			{
 				if(arg1.getOffset() == -1)
 				{
@@ -563,10 +615,33 @@ public class CodeGenerator
 						temp =  "sw " + arg1.getRegister() + ", 0(" + resultReg + ")\n";
 					}
 				}
-				else //Variable arg1
+				else
 				{
-					//Todo
-					temp = "";
+					String tempReg = allocator.allocateTempReg(0);
+					
+					if(arg2.getType().equals("constant"))
+					{
+						//Calculate offset
+						int offset = Integer.parseInt(arg2.getName());
+						
+						if(result.getType().equals("int[]"))
+						{
+							offset = offset * 4; //Multiply by 4 because it is an int[]
+						}
+						offset += 4; //Add 4 to offset the length
+						
+						temp =  "lw " + tempReg + ", " + arg1.getOffset() + "($a0)\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp =  "sw " + tempReg + ", " + offset + "(" + resultReg + ")\n";
+					}
+					else
+					{
+						temp =  "lw " + tempReg + ", " + arg1.getOffset() + "($a0)\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp =  "sw " + tempReg + ", 0(" + resultReg + ")\n";
+					}
 				}
 			}
 			
@@ -584,10 +659,6 @@ public class CodeGenerator
 				{
 					temp = "sub " + resultReg + ", " + resultReg + ", " + arg2Reg + "\n";
 					bw.write(temp, 0, temp.length());
-				}
-				else //Class Variable
-				{
-					//Todo
 				}
 			}
 			
@@ -615,10 +686,6 @@ public class CodeGenerator
 						temp = "srl " + arg2Reg + ", " + arg2Reg + ", 2\n";
 						bw.write(temp, 0, temp.length());
 					}
-				}
-				else //Class variable
-				{
-					//Todo
 				}
 			}
 		}
@@ -650,12 +717,14 @@ public class CodeGenerator
 					}
 					else //Class variable
 					{
-						//Todo
-						temp = "";
+						temp = "lw " + allocator.allocateReg(result.getName()) + ", " + arg1.getOffset() + "($a0)\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp = "lw " + allocator.allocateReg(result.getName()) + ", 0(" + allocator.allocateReg(result.getName()) + ")\n";
 					}
 				}
 			}
-			else //Variable arg1
+			else //Variable result
 			{
 				if(result.getOffset() == -1)
 				{
@@ -671,15 +740,45 @@ public class CodeGenerator
 						}
 						else //Class variable
 						{
-							//Todo
-							temp = "";
+							temp = "lw " + result.getRegister() + ", " + arg1.getOffset() + "($a0)\n";
+							bw.write(temp, 0, temp.length());
+						
+							temp = "lw " + result.getRegister() + ", 0(" + result.getRegister() + ")\n";
 						}
 					}
 				}
 				else //Class variable
 				{
-					//Todo
-					temp = "";
+					String resultReg = allocator.allocateTempReg(0);
+					String tempReg = allocator.allocateTempReg(1);
+					
+					if(arg1.getType().equals("temporary"))
+					{
+						temp = "lw " + resultReg + ", 0(" + allocator.allocateReg(arg1.getName()) + ")\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
+					}
+					else //Variable
+					{
+						if(arg1.getOffset() == -1)
+						{
+							temp = "lw " + resultReg + ", 0(" + arg1.getRegister() + ")\n";
+							bw.write(temp, 0, temp.length());
+						
+							temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
+						}
+						else //Class variable
+						{
+							temp = "lw " + resultReg + ", " + arg1.getOffset() + "($a0)\n";
+							bw.write(temp, 0, temp.length());
+							
+							temp = "lw " + resultReg + ", 0(" + resultReg + ")\n";
+							bw.write(temp, 0, temp.length());
+						
+							temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
+						}
+					}
 				}
 			}
 			
@@ -742,8 +841,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
-					temp = "";
+					temp = "lw $a0, " + arg2.getOffset() + "($a0)\n";
 				}
 			}
 				
@@ -783,7 +881,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "sw $v0, " + result.getOffset() + "($a0)\n";
 				}
 			}
 				
@@ -895,7 +993,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "lw " + resultReg + ", " + arg1.getOffset() + "($a0)\n";
 				}
 			}
 					
@@ -909,7 +1007,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
 				}
 				bw.write(temp, 0, temp.length());
 			}
@@ -1032,7 +1130,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "lw $v0, " + arg1.getOffset() + "($a0)\n";
 				}
 			}
 			
@@ -1377,7 +1475,10 @@ public class CodeGenerator
 					}
 					else //Class variable
 					{
-						//Todo
+						temp = "lw " + reg + ", 60($sp)\n";
+						bw.write(temp, 0, temp.length());
+						
+						temp = "lw " + reg + ", " + arg1.getOffset() + "(" + reg + ")\n";
 					}
                 }
 
@@ -1426,7 +1527,7 @@ public class CodeGenerator
 					}
 					else //Class variable
 					{
-						//Todo
+						temp = "lw $v0, " + result.getOffset() + "0($a0)\n";
 					}
 				}
 				
