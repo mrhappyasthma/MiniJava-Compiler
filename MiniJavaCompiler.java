@@ -80,6 +80,10 @@ public class MiniJavaCompiler
 					HashMap<String, String> workList = intermediateVisitor.getWorkList();
 					
 					//Allocate Registers
+					AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
+					asmFG.buildCFG();
+					
+					//The above register allocator is not finished, so this is the temporary version:
 					RegisterAllocator allocator = new RegisterAllocator();
 					
 					SymbolTable symTable = (SymbolTable)symbolTable;
@@ -104,32 +108,6 @@ public class MiniJavaCompiler
 					//Backpatch the IR to resolve labels in jumps to methods
 					BackPatcher backPatch = new BackPatcher(IRList, workList);
 					backPatch.patch();
-						
-					//Print IR  -- Temporary, remove later!
-					for(int i = 0; i < IRList.size(); i++)
-					{
-						if(labels.containsKey(IRList.get(i)))
-						{
-							List<Label> temp = labels.get(IRList.get(i));
-							for(int j = 0; j < temp.size(); j++)
-							{
-								if(temp.get(j).printBefore)
-									System.out.println(temp.get(j).toString());
-							}
-						}
-						
-						System.out.println("\t" + IRList.get(i).toString());
-						
-						if(labels.containsKey(IRList.get(i)))
-						{
-							List<Label> temp = labels.get(IRList.get(i));
-							for(int j = 0; j < temp.size(); j++)
-							{
-								if(!temp.get(j).printBefore)
-									System.out.println(temp.get(j).toString());
-							}
-						}
-					}
 					
 					//Create output file
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
@@ -137,12 +115,6 @@ public class MiniJavaCompiler
 					//Write MIPS
 					CodeGenerator gen = new CodeGenerator(IRList, labels, allocator, symTable, fileName);
 					gen.generateMIPS();
-					
-					//Temporary -- remove later!
-					System.out.println("\n Testing Graph");
-					AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
-					asmFG.buildCFG();
-					asmFG.printGraph();
 
 					//Link runtime.asm file
 					Linker linker = new Linker("linker/runtime.asm", fileName);
