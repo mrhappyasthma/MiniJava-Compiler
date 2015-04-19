@@ -915,6 +915,9 @@ public class CodeGenerator
 			if(arg1.getType().equals("constant"))
 			{
 				String tempReg = allocator.allocateTempReg(0);
+				temp = "li " + tempReg + ", " + arg1.getName() + "\n";
+				bw.write(temp, 0, temp.length());
+				
 				temp = "beq " + tempReg + ", $zero, " + label + "\n";
 			}
 			else if(arg1.getType().equals("temporary"))
@@ -929,8 +932,9 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
-					temp = "";
+					String tempReg = allocator.allocateTempReg(0);
+					temp = "lw " + tempReg + ", " + arg1.getOffset() + "($a0)\n";
+					temp = "beq " + tempReg + ", $zero, " + label + "\n";
 				}
 			}
 			
