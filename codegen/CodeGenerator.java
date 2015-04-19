@@ -1058,8 +1058,7 @@ public class CodeGenerator
 				}
 				else //Class variable
 				{
-					//Todo
-					temp = "";
+					temp = "lw " + resultReg + ", " + arg1.getOffset() + "($a0)\n";
 				}
 			}
 					
@@ -1096,11 +1095,11 @@ public class CodeGenerator
 			{
 				if(result.getOffset() == -1)
 				{
-					temp = "sw " + result.getRegister() + ", " + resultReg + "\n";
+					temp = "move " + result.getRegister() + ", " + resultReg + "\n";
 				}
 				else //Class variable
 				{
-					//Todo
+					temp = "sw " + resultReg + ", " + result.getOffset() + "($a0)\n";
 				}
 				bw.write(temp, 0, temp.length());
 			}
