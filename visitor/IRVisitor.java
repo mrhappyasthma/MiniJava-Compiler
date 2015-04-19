@@ -269,14 +269,13 @@ public class IRVisitor implements Visitor
 	// Statement s;
 	public void visit(While n) 
 	{		
-		Label L1 = new Label(true);
+		Label L1 = new Label(false);
 		Label L2 = new Label(false);
 		
-		int size = IRList.size();
+		addLabel(IRList.get(IRList.size()-1), L1);
 		
 		n.e.accept(this);
-		addLabel(IRList.get(size), L1);
-		
+
 		IRList.add(new ConditionalJumpIR(n.e.generateTAC(), L2)); 
 	
 		n.s.accept(this);
