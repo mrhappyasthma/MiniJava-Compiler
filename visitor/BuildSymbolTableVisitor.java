@@ -7,6 +7,7 @@ package visitor;
 
 import syntaxtree.*;
 import symboltable.*;
+import java.util.HashSet;
 
 public class BuildSymbolTableVisitor implements Visitor
 {
@@ -212,8 +213,15 @@ public class BuildSymbolTableVisitor implements Visitor
 		n.t.accept(this);
 		n.i.accept(this);
     
+		//Check for redef in method arguments
+		HashSet<String> methodArgs = new HashSet<String>();
+	
 		for ( int i = 0; i < n.fl.size(); i++ ) 
 		{
+			if(!methodArgs.add(n.fl.elementAt(i).i.toString()))
+			{
+				redefError(n.fl.elementAt(i).i.toString(), n.fl.elementAt(i).i.lineNum, n.fl.elementAt(i).i.charNum);
+			}
 			paramNames[n.fl.size()-i] = n.fl.elementAt(i).i.toString();
 			paramTypes[n.fl.size()-i] = getTypeStr(n.fl.elementAt(i).t);
 			n.fl.elementAt(i).accept(this);
