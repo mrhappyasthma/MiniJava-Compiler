@@ -114,7 +114,7 @@ public class Node {
         }
         if (instr.getArg2() != null) {
             if ((instr.getArg2()) instanceof Variable) {
-                Variable arg2 = (Variable) instr.getArg1();
+                Variable arg2 = (Variable) instr.getArg2();
                 if (!arg2.getType().equals("constant")) {
                     for (int i = 0; i < listVar.size(); i++) {
                         if ( arg2.getName().equals(listVar.get(i).getName())) {

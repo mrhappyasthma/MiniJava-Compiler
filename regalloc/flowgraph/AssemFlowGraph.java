@@ -24,7 +24,7 @@ public class AssemFlowGraph{
             instr = i;
             graph = new ArrayList<Node>();
             labelNode = new Hashtable<String,Integer>();
-            func = new ArrayList<>();
+            func = new ArrayList<List<Node>>();
             
             //countInstr=0;
             
