@@ -24,6 +24,9 @@ public class Liveness {
     public void calculateLive() {
         List<Variable> listVar = getAllVariables();
 	System.out.println("List of Vars ");
+        //if the function is not the first it is not going to start as 0
+        int offset = flowGraph.get(0).getNum();
+        
         for (int i = 0; i < listVar.size(); i++) {
             System.out.print(i+"-"+listVar.get(i).getName()+ " ");
         }
@@ -65,8 +68,10 @@ public class Liveness {
                 //walk the nexts to get the number of the instruction to see it liveIn
                 BitSet bitNext = new BitSet(listVar.size());
                 for (int j = 0; j < nextNodes.size(); j++) {
-                    BitSet bitNextAux = liveIn.get(nextNodes.get(j).getNum());
-                    bitNext.or(bitNext);
+                    if(!n.getJumpToFunction() && n!=null){
+                        BitSet bitNextAux = liveIn.get((nextNodes.get(j).getNum())-offset);
+                        bitNext.or(bitNext);
+                    }
                 }
                 liveOut.set(i, bitNext);
 
@@ -187,4 +192,5 @@ public class Liveness {
    
 
 }
+
 
