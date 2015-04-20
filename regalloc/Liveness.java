@@ -52,8 +52,16 @@ public class Liveness {
 		
                 Node n = flowGraph.get(i);
 		System.out.println(i);
+		
+		System.out.println("liveIn: "+liveIn.get(i));
+                
+                System.out.println("liveOut: "+liveOut.get(i));
                 auxListIn.set(i, liveIn.get(i));
+                System.out.println("AuxIn: "+auxListIn.get(i));
                 auxListOut.set(i, liveOut.get(i));
+                System.out.println("AuxOut: "+auxListOut.get(i));
+
+
 
                 //or - union , and - intersection, andNot - difference
                 BitSet bitUse = n.calculateUse(listVar);
@@ -63,7 +71,11 @@ public class Liveness {
                 aux.andNot(bitDef);
                 bitUse.or(aux);
                 liveIn.set(i, bitUse);
-                //out[n] = union over successors
+                System.out.println("liveIn: "+liveIn.get(i));
+		System.out.println("liveOut: "+liveOut.get(i));
+
+
+		  //out[n] = union over successors
                 List<Node> nextNodes = n.nextNode();
                 //walk the nexts to get the number of the instruction to see it liveIn
                 BitSet bitNext = new BitSet(listVar.size());
@@ -75,10 +87,14 @@ public class Liveness {
                 }
                 liveOut.set(i, bitNext);
 
+		System.out.println("liveIn: "+liveIn.get(i));
+                System.out.println("liveOut: "+liveOut.get(i));		
+
             }
+	    //printLiveInOut();
 
         } while (!allEqual(liveIn, auxListIn, liveOut, auxListOut));
-	printLiveInOut();
+	//printLiveInOut();
     }
 
     // function to keep in a list all variables and temporaries that the program has
@@ -133,30 +149,15 @@ public class Liveness {
 
 
 	private boolean allEqual(List<BitSet> liveIn, List<BitSet> auxIn, List<BitSet> liveOut, List<BitSet> auxOut) {
-            if(liveIn.size() != auxIn.size() && liveOut.size() != auxOut.size()){
+	   if(liveIn.size() != auxIn.size() && liveOut.size() != auxOut.size()){
                 return false;
             }
             else{
-                for (int i = 0; i < liveIn.size(); i++) {
-                        BitSet bitIn = liveIn.get(i);
-                        BitSet bitAuxIn = auxIn.get(i);
-                        bitIn.xor(bitAuxIn);
-                        if (!bitIn.isEmpty()) {
-                                return false;
-                        }
-                }
-                for (int i = 0; i < liveIn.size(); i++) {
-                        
-                        BitSet bitOut = liveOut.get(i);
-                        BitSet bitAuxOut = auxOut.get(i);
-                        
-                        bitOut.xor(bitAuxOut);
-                        if (!bitOut.isEmpty()) {
-                                return false;
-                        }
+                if(compareListBits(liveIn, auxIn) && compareListBits(liveOut, auxOut)){
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
 
 
@@ -188,9 +189,21 @@ public class Liveness {
 	System.out.println();
 
     }
+
+    private boolean compareListBits(List<BitSet> list1, List<BitSet> list2) {
+        for (int i = 0; i < list1.size(); i++) {
+            for (int j = 0; j < list1.get(i).size(); j++) {
+		if(list1.get(i).get(j) != list2.get(i).get(j)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     
    
 
 }
+
 
 
