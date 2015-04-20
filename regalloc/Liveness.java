@@ -23,16 +23,9 @@ public class Liveness {
 
     public void calculateLive() {
         List<Variable> listVar = getAllVariables();
-	System.out.println("List of Vars ");
         //if the function is not the first it is not going to start as 0
         int offset = flowGraph.get(0).getNum();
         
-        for (int i = 0; i < listVar.size(); i++) {
-            System.out.print(i+"-"+listVar.get(i).getName()+ " ");
-        }
-	System.out.println(" ");
-        printUseDef(listVar);
-        System.out.println(" ");
        	List<BitSet> auxListIn = new ArrayList<BitSet>();
         List<BitSet> auxListOut = new ArrayList<BitSet>();;
 
@@ -46,7 +39,6 @@ public class Liveness {
         }
         
         do {
-	    System.out.println("here");
             for (int i = 0; i < flowGraph.size(); i++) {
 
 		
@@ -82,10 +74,8 @@ public class Liveness {
 
 
             }
-	    printLiveInOut();
 
         } while (!allEqual(liveIn, auxListIn, liveOut, auxListOut));
-	printLiveInOut();
     }
 
     // function to keep in a list all variables and temporaries that the program has
