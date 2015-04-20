@@ -13,20 +13,39 @@ public class Node {
     int num;
     List<String> jumpToLabel;
     List<Node> next;
-    
+    boolean jumpToFunction;
+   boolean exitFunction; 
 
     public Node (Quadruple IR, int n){
         instr = IR;
         num=n;
         jumpToLabel = new ArrayList<String>();
 	next = new ArrayList<Node>();
+	jumpToFunction =  false;
+	exitFunction= false;
     }
     
     //
     public void addJumpTo(String name){
         jumpToLabel.add(name);
     }
-    //can be a label or the next instruction
+
+    public void setJumpToFunction(){
+        jumpToFunction = true;
+    }
+    
+    public boolean getJumpToFunction(){
+        return jumpToFunction;
+    }
+    public void setExitFunction(){
+        exitFunction = true;
+    }
+    
+    public boolean getExitFunction(){
+        return exitFunction;
+    }  
+
+  //can be a label or the next instruction
     public List<String> nextLabel(){
         return jumpToLabel;
     }
@@ -40,6 +59,11 @@ public class Node {
     public List<Node> nextNode(){
         return next;
     }
+
+   public void setNextNull() {
+        next.clear();
+    }    
+
     
     public Quadruple getInstr(){
         return instr;

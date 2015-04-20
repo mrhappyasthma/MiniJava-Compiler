@@ -30,42 +30,49 @@ public class Liveness {
 	System.out.println(" ");
         printUseDef(listVar);
         System.out.println(" ");
-        List<BitSet> auxListIn = new ArrayList<BitSet>();
+       	List<BitSet> auxListIn = new ArrayList<BitSet>();
         List<BitSet> auxListOut = new ArrayList<BitSet>();;
 
         for (int j = 0; j < flowGraph.size(); j++) {
             BitSet bitIn = new BitSet(listVar.size());
-            liveIn.add(bitIn);
+            liveIn.add(j,bitIn);
+	    auxListIn.add(j,bitIn);
             BitSet bitOut = new BitSet(listVar.size());
-            liveOut.add(bitOut);
+            auxListOut.add(j,bitOut);
+	    liveOut.add(j,bitOut);
         }
         
         do {
+	    System.out.println("here");
             for (int i = 0; i < flowGraph.size(); i++) {
+
+		
                 Node n = flowGraph.get(i);
-                auxListIn.add(i, liveIn.get(i));
-                auxListOut.add(i, liveOut.get(i));
+		System.out.println(i);
+                auxListIn.set(i, liveIn.get(i));
+                auxListOut.set(i, liveOut.get(i));
+
                 //or - union , and - intersection, andNot - difference
                 BitSet bitUse = n.calculateUse(listVar);
-                
                 BitSet bitDef = n.calculateDef(listVar);
-                BitSet aux = liveOut.get(i);
+                
+		BitSet aux = liveOut.get(i);
                 aux.andNot(bitDef);
                 bitUse.or(aux);
-                liveIn.add(i, bitUse);
+                liveIn.set(i, bitUse);
                 //out[n] = union over successors
                 List<Node> nextNodes = n.nextNode();
                 //walk the nexts to get the number of the instruction to see it liveIn
                 BitSet bitNext = new BitSet(listVar.size());
                 for (int j = 0; j < nextNodes.size(); j++) {
                     BitSet bitNextAux = liveIn.get(nextNodes.get(j).getNum());
-                    bitNext.or(bitNextAux);
+                    bitNext.or(bitNext);
                 }
-                liveOut.add(i, bitNext);
+                liveOut.set(i, bitNext);
 
             }
 
-        } while (allEqual(liveIn, auxListIn, liveOut, auxListOut));
+        } while (!allEqual(liveIn, auxListIn, liveOut, auxListOut));
 	printLiveInOut();
     }
 
@@ -166,12 +173,14 @@ public class Liveness {
      private void printLiveInOut() {
         System.out.println("LiveIn:");
         for (int i = 0; i < liveIn.size(); i++) {
-            System.out.println(i+" "+liveIn.get(i));
+            System.out.print(i+" "+liveIn.get(i)+" ");
         }
+	System.out.println();
         System.out.println("LiveOut:");
         for (int i = 0; i < liveOut.size(); i++) {
-            System.out.println(i+" "+liveOut.get(i));
+            System.out.print(i+" "+liveOut.get(i)+" ");
         }
+	System.out.println();
 
     }
     
