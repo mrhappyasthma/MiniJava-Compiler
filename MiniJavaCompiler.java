@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Hashtable;
 import java.util.HashMap;
 import regalloc.flowgraph.*;
-
+import regalloc.graph.*;
 public class MiniJavaCompiler
 {
 	public static void main(String[] args)
@@ -79,12 +79,12 @@ public class MiniJavaCompiler
 					Hashtable<Quadruple, List<Label>> labels = intermediateVisitor.getLabels();
 					HashMap<String, String> workList = intermediateVisitor.getWorkList();
 					
-					//Allocate Registers
-					AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);					
-					asmFG.buildCFG();
 					
-					//The above register allocator is not finished, so this is the temporary version:
-					RegisterAllocator allocator = new RegisterAllocator();
+						
+					 //The above register allocator is not finished, so this is the temporary versio$
+                                        RegisterAllocator allocator = new RegisterAllocator(); 										
+
+					
 					
 					SymbolTable symTable = (SymbolTable)symbolTable;
 					Hashtable <String, ClassSymbolTable> classes = symTable.getClasses();
@@ -109,12 +109,25 @@ public class MiniJavaCompiler
 					BackPatcher backPatch = new BackPatcher(IRList, workList);
 					backPatch.patch();
 					
+					
+					 //Allocate Registers
+                                        AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);
+                                        List<List<Node>> func = asmFG.buildCFG();
+					for (int i = 0; i < func.size(); i++) {
+                                            Liveness liv = new Liveness(func.get(i));
+                                           // liv.calculateLive();
+            
+                                        }		
+			
+
+
 					//Create output file
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
 						
 					//Write MIPS
 					CodeGenerator gen = new CodeGenerator(IRList, labels, allocator, symTable, fileName);
 					gen.generateMIPS();
+
 
 					//Link runtime.asm file
 					Linker linker = new Linker("linker/runtime.asm", fileName);
