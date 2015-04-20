@@ -51,15 +51,9 @@ public class Liveness {
 
 		
                 Node n = flowGraph.get(i);
-		System.out.println(i);
 		
-		System.out.println("liveIn: "+liveIn.get(i));
-                
-                System.out.println("liveOut: "+liveOut.get(i));
                 auxListIn.set(i, liveIn.get(i));
-                System.out.println("AuxIn: "+auxListIn.get(i));
                 auxListOut.set(i, liveOut.get(i));
-                System.out.println("AuxOut: "+auxListOut.get(i));
 
 
 
@@ -71,8 +65,6 @@ public class Liveness {
                 aux.andNot(bitDef);
                 bitUse.or(aux);
                 liveIn.set(i, bitUse);
-                System.out.println("liveIn: "+liveIn.get(i));
-		System.out.println("liveOut: "+liveOut.get(i));
 
 
 		  //out[n] = union over successors
@@ -82,19 +74,18 @@ public class Liveness {
                 for (int j = 0; j < nextNodes.size(); j++) {
                     if(!n.getJumpToFunction() && n!=null){
                         BitSet bitNextAux = liveIn.get((nextNodes.get(j).getNum())-offset);
-                        bitNext.or(bitNext);
+		
+                        bitNext.or(bitNextAux);
                     }
                 }
                 liveOut.set(i, bitNext);
 
-		System.out.println("liveIn: "+liveIn.get(i));
-                System.out.println("liveOut: "+liveOut.get(i));		
 
             }
-	    //printLiveInOut();
+	    printLiveInOut();
 
         } while (!allEqual(liveIn, auxListIn, liveOut, auxListOut));
-	//printLiveInOut();
+	printLiveInOut();
     }
 
     // function to keep in a list all variables and temporaries that the program has
