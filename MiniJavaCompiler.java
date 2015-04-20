@@ -20,6 +20,8 @@ import java.util.Hashtable;
 import java.util.HashMap;
 import regalloc.flowgraph.*;
 import regalloc.graph.*;
+import java.util.BitSet;
+
 public class MiniJavaCompiler
 {
 	public static void main(String[] args)
@@ -109,17 +111,35 @@ public class MiniJavaCompiler
 					BackPatcher backPatch = new BackPatcher(IRList, workList);
 					backPatch.patch();
 					
+
+
+					for(int i = 0; i < keys.size(); i++) 	//Iterate over each class
+					{
+						ClassSymbolTable classSymTable = classes.get(keys.get(i));
+						classSymTable.calculateVarOffsets(); //Store variable offsets in the symbol table
+						
+						Hashtable<String, MethodSymbolTable> methods = classSymTable.getMethods();
+						List<String> methodKeys = Helper.keysToSortedList(methods.keySet());
+						
+						for(int j = 0; j < methodKeys.size(); j++)
+						{
+							MethodSymbolTable methSymTable = methods.get(methodKeys.get(j));
+							methSymTable.assignRegisters(allocator); //Temporary allocation to all method locals
+						}
+					}					
+					
 					
 					 //Allocate Registers
                                         AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);
                                         List<List<Node>> func = asmFG.buildCFG();
 					for (int i = 0; i < func.size(); i++) {
-                                            Liveness liv = new Liveness(func.get(i));
-                                           // liv.calculateLive();
-            
-                                        }		
-			
-
+                                            	Liveness liv = new Liveness(func.get(i));
+                                            	liv.calculateLive();
+					    	List<BitSet> liveOut = liv.getLiveOut();
+						InterferenceGraph iG = new InterferenceGraph(func.get(i),liveOut, liv.getAllVariables()); 
+                                        	//iG.buildInterferenceGraph();
+					}		
+					
 
 					//Create output file
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";

@@ -27,7 +27,7 @@ public class InterferenceGraph {
     public void buildInterferenceGraph(){
         for (int i = 0; i < flowGraph.size(); i++) {
             Node n = flowGraph.get(i);
-            if(n.isMove()){
+            if(n.getMove()){
                 //later we will need to check if one of the live outs is the arg1
                 Variable arg1 = (Variable) n.getInstr().getArg1();
                 

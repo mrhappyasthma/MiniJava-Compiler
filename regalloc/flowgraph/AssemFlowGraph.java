@@ -114,6 +114,16 @@ public class AssemFlowGraph{
                     }
  
                 }
+
+		 if(q instanceof UnaryAssignmentIR){
+                    if(q.getOp()==null){
+                        Variable arg1 = (Variable) q.getArg1();
+                        Variable arg2 = (Variable) q.getArg2();
+                        if(arg1.getName().equals(arg2.getName())){
+                            n.setMove();
+                        }
+                    }
+                }
                 if(q instanceof ConditionalJumpIR ){
                     String nameLabel = ((Label)q.getResult()).getName();
                     //iffalse

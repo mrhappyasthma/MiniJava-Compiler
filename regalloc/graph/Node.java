@@ -15,7 +15,7 @@ public class Node {
     List<Node> next;
     boolean jumpToFunction;
    boolean exitFunction; 
-
+    boolean isMove;
     public Node (Quadruple IR, int n){
         instr = IR;
         num=n;
@@ -23,6 +23,7 @@ public class Node {
 	next = new ArrayList<Node>();
 	jumpToFunction =  false;
 	exitFunction= false;
+	isMove = false;
     }
     
     //
@@ -73,17 +74,13 @@ public class Node {
         return num;
     }    
 
-    public boolean isMove(){
-        if(instr.getArg2()==null){
-            Variable res = (Variable)instr.getResult();
-            Variable arg1 = (Variable)instr.getArg1();
-            if(arg1.getName().equals(res.getName())){
-                return true;
-            }
-        }
-        return false;
+    public void setMove(){
+        isMove = true;
     }
 
+    public boolean getMove(){
+        return isMove;
+    }
 
         public BitSet calculateDef(List<Variable> listVar) {
         BitSet bitDef = new BitSet(listVar.size());
