@@ -83,11 +83,9 @@ public class MiniJavaCompiler
 					
 					
 						
-					 //The above register allocator is not finished, so this is the temporary versio$
-                                        RegisterAllocator allocator = new RegisterAllocator(); 										
+					//Temporary reg allocation
+                    RegisterAllocator allocator = new RegisterAllocator(); 										
 
-					
-					
 					SymbolTable symTable = (SymbolTable)symbolTable;
 					Hashtable <String, ClassSymbolTable> classes = symTable.getClasses();
 					List<String> keys = Helper.keysToSortedList(classes.keySet());;
@@ -106,40 +104,23 @@ public class MiniJavaCompiler
 							methSymTable.assignRegisters(allocator); //Temporary allocation to all method locals
 						}
 					}
+					//End temp reg allocation
 					
 					//Backpatch the IR to resolve labels in jumps to methods
 					BackPatcher backPatch = new BackPatcher(IRList, workList);
 					backPatch.patch();
 					
-
-
-					for(int i = 0; i < keys.size(); i++) 	//Iterate over each class
+					//Allocate Registers - Not complete (Inteferences are buggy and no coloring/allocation yet)
+                    AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);
+                    List<List<Node>> func = asmFG.buildCFG();
+					for (int i = 0; i < func.size(); i++) 
 					{
-						ClassSymbolTable classSymTable = classes.get(keys.get(i));
-						classSymTable.calculateVarOffsets(); //Store variable offsets in the symbol table
-						
-						Hashtable<String, MethodSymbolTable> methods = classSymTable.getMethods();
-						List<String> methodKeys = Helper.keysToSortedList(methods.keySet());
-						
-						for(int j = 0; j < methodKeys.size(); j++)
-						{
-							MethodSymbolTable methSymTable = methods.get(methodKeys.get(j));
-							methSymTable.assignRegisters(allocator); //Temporary allocation to all method locals
-						}
-					}					
-					
-					
-					 //Allocate Registers
-                                        AssemFlowGraph asmFG = new AssemFlowGraph(IRList,labels);
-                                        List<List<Node>> func = asmFG.buildCFG();
-					for (int i = 0; i < func.size(); i++) {
-                                            	Liveness liv = new Liveness(func.get(i));
-                                            	liv.calculateLive();
-					    	List<BitSet> liveOut = liv.getLiveOut();
+                        Liveness liv = new Liveness(func.get(i));
+                        liv.calculateLive();
+					    List<BitSet> liveOut = liv.getLiveOut();
 						InterferenceGraph iG = new InterferenceGraph(func.get(i),liveOut, liv.getAllVariables()); 
-                                        	//iG.buildInterferenceGraph();
-					}		
-					
+                        //iG.buildInterferenceGraph();
+					}	
 
 					//Create output file
 					String fileName = args[0].substring(0, args[0].lastIndexOf(".")) + ".asm";
